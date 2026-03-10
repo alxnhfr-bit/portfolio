@@ -92,13 +92,13 @@
   .project-tagline { font-size: 1.15rem; color: var(--text-light); font-weight: 400; }
   .section-dark .project-tagline { color: var(--text-dark-muted); }
 
-  .phone-gallery-wrapper { overflow: hidden; padding: 60px 0 80px; }
+  .phone-gallery-wrapper { overflow-x: auto; padding: 60px 0 80px; scrollbar-width:
+   none; -webkit-overflow-scrolling: touch; }
+  .phone-gallery-wrapper::-webkit-scrollbar { display: none; }
   .phone-gallery {
     display: flex; gap: 36px; align-items: center;
-    padding: 0 40px; overflow-x: auto; scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    padding: 0 40px; width: fit-content; margin: 0 auto;
   }
-  .phone-gallery::-webkit-scrollbar { display: none; }
 
   .iphone-wrap {
     flex: 0 0 auto; scroll-snap-align: center;
@@ -159,9 +159,10 @@
   }
   .section-light .phone-label { color: var(--text-light); }
 
-  .story { display: flex; flex-direction: column; gap: 64px; }
+  .story { display: flex; flex-direction: column; gap: 64px; align-items: center; text-align: center; }
   .story-step {
     opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease;
+    display: flex; flex-direction: column; align-items: center;
   }
   .story-step.visible { opacity: 1; transform: translateY(0); }
   .step-label {
@@ -226,7 +227,7 @@
     .iphone-screen { border-radius: 24px; }
     .iphone-screen::before { width: 46px; height: 14px; top: 6px; }
     .iphone-screen::after { border-radius: 24px; }
-    .phone-gallery { gap: 16px; padding: 0 16px; justify-content: flex-start; }
+    .phone-gallery { gap: 16px; padding: 0 16px; }
     .phone-gallery-wrapper { padding: 40px 0 60px; }
     .phone-label { font-size: 0.62rem; }
   }
