@@ -239,6 +239,38 @@
     .phone-gallery-wrapper { padding: 40px 0 60px; }
     .phone-label { font-size: 0.62rem; }
   }
+  .flagship-chip {
+    display: inline-block; margin-left: 10px; padding: 3px 10px;
+    border-radius: 999px; background: rgba(41,151,255,0.16);
+    color: var(--blue); font-size: 0.66rem; font-weight: 600;
+    letter-spacing: 0.08em; vertical-align: middle;
+  }
+  .feature-grid-wrap { padding: 24px 24px 0; }
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .feature-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; padding: 26px 24px;
+  }
+  .section-light .feature-card {
+    background: rgba(0,0,0,0.025); border-color: rgba(0,0,0,0.08);
+  }
+  .feature-card h3 {
+    font-family: var(--heading); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 14px;
+  }
+  .feature-card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .feature-card li {
+    font-size: 0.92rem; line-height: 1.55; color: var(--text-dark-muted);
+  }
+  .section-light .feature-card li { color: var(--text-light); }
+  @media (max-width: 800px) {
+    .feature-grid { grid-template-columns: 1fr; max-width: 560px; }
+    .feature-grid-wrap { padding: 16px 20px 0; }
+  }
 </style>
 </head>
 <body>
@@ -247,8 +279,8 @@
   <div class="nav-inner">
     <a href="#" class="nav-name">Alexander Neuhofer</a>
     <ul class="nav-links">
-      <li><a href="#rise">Rise</a></li>
       <li><a href="#sundayatlas">SundayAtlas</a></li>
+      <li><a href="#rise">Rise</a></li>
       <li><a href="#brewlab">BrewLab</a></li>
     </ul>
   </div>
@@ -272,10 +304,98 @@
     </svg>
   </div>
 </section>
-<section class="section-dark" id="rise">
+<section class="section-dark" id="sundayatlas">
   <div class="section-inner section-pad" style="padding-bottom: 0;">
     <div class="project-header">
-      <p class="project-label">01</p>
+      <p class="project-label">01 <span class="flagship-chip">Live &middot; Flagship</span></p>
+      <h2 class="project-title">SundayAtlas</h2>
+      <p class="project-tagline">AI travel planning, powered by the creators you trust.</p>
+    </div>
+  </div>
+  <div class="phone-gallery-wrapper">
+    <div class="phone-gallery">
+      <div class="iphone-wrap">
+        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-home.webp" alt="Home" width="600" height="1304" loading="lazy"></div></div>
+        <p class="phone-label">Home</p>
+      </div>
+      <div class="iphone-wrap">
+        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-destinations.webp" alt="Destinations" width="600" height="1304" loading="lazy"></div></div>
+        <p class="phone-label">Destinations</p>
+      </div>
+      <div class="iphone-wrap">
+        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-itinerary.webp" alt="Itinerary" width="600" height="1304" loading="lazy"></div></div>
+        <p class="phone-label">Itinerary</p>
+      </div>
+      <div class="iphone-wrap">
+        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-map.webp" alt="Map" width="600" height="1304" loading="lazy"></div></div>
+        <p class="phone-label">Map</p>
+      </div>
+      <div class="iphone-wrap">
+        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-inspo.webp" alt="Inspo" width="600" height="1304" loading="lazy"></div></div>
+        <p class="phone-label">Inspo</p>
+      </div>
+    </div>
+  </div>
+  <div class="feature-grid-wrap">
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h3>Planning</h3>
+        <ul>
+          <li>AI concierge builds day-by-day itineraries from a natural-language prompt.</li>
+          <li>Every place verified live against Google Places, with provenance badges (Eater, Michelin, ratings).</li>
+          <li>Trip essentials (visa, plugs, SIM, transit) and travel preferences carry across every trip.</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <h3>Discovery &#8212; the differentiator</h3>
+        <ul>
+          <li>Trending YouTube content per destination, grouped Eats / Sip / Do / Stay.</li>
+          <li>AI extracts named places from any video &#8594; one-click add to your trip with creator credit.</li>
+          <li>Paste your own YouTube link &#8212; SundayAtlas pulls its places.</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <h3>Bookings &amp; polish</h3>
+        <ul>
+          <li>Bookings as first-class items: check-in/out, nights, confirmation, &ldquo;Booked&rdquo; badge.</li>
+          <li>Booking.com search (dates pre-filled) routed through a click-tracking + affiliate rail.</li>
+          <li>Read-only share links, installable PWA, consent banner, self-service data deletion.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="section-inner section-pad" style="padding-top: 0;">
+    <div class="story">
+      <div class="story-step">
+        <p class="step-label">The Problem</p>
+        <p class="step-text">Planning a trip means juggling 5&#8211;10 different platforms.</p>
+        <p class="step-detail">Itineraries in one tab. Hotels in another. Activities somewhere else. Bookings in a fourth. The experience is fragmented, repetitive, and exhausting.</p>
+      </div>
+      <div class="story-step">
+        <p class="step-label">The Insight</p>
+        <p class="step-text">The best travel recommendations don&#8217;t come from algorithms &#8212; they come from creators you already trust.</p>
+        <p class="step-detail">An AI concierge that takes the YouTube videos you&#8217;d watch anyway and turns them into draft itineraries &#8212; with every place verified, sourced, and one click away from being in your trip.</p>
+      </div>
+      <div class="story-step">
+        <p class="step-label">The Product</p>
+        <p class="step-text">SundayAtlas is a live travel product, not a closed prototype.</p>
+        <p class="step-detail">An AI concierge that builds day-by-day itineraries from a natural-language prompt &#8212; every place verified live against Google Places, every recommendation traceable to a source. The differentiator: it extracts named spots from the YouTube creators you already follow, so a video you&#8217;d watch anyway becomes a draft itinerary in one click. Plus bookings, share links, an installable PWA, and an affiliate-tracking rail under the hood.</p>
+      </div>
+      <div class="story-step">
+        <p class="step-label">The Takeaway</p>
+        <p class="step-text">Trust is the product, not the itinerary.</p>
+        <p class="step-detail">Users don&#8217;t abandon trip planners because the suggestions are bad. They abandon them because they don&#8217;t trust a single tool to replace their own research. The real design challenge is earning that trust incrementally.</p>
+      </div>
+    </div>
+    <div class="proto-link">
+      <a href="https://sundayatlas.vercel.app/" target="_blank" rel="noopener" aria-label="Try SundayAtlas &#8212; open the live product">Try SundayAtlas <span>&#8250;</span></a>
+    </div>
+  </div>
+</section>
+<section class="section-light" id="rise">
+  <div class="section-inner section-pad" style="padding-bottom: 0;">
+    <div class="project-header">
+      <p class="project-label">02</p>
       <h2 class="project-title">Rise</h2>
       <p class="project-tagline">AI Health &amp; Fitness OS</p>
     </div>
@@ -329,66 +449,6 @@
     </div>
     <div class="proto-link">
       <a href="https://rise-health-os.lovable.app/" target="_blank" rel="noopener">View the prototype <span>&#8250;</span></a>
-    </div>
-  </div>
-</section>
-<section class="section-light" id="sundayatlas">
-  <div class="section-inner section-pad" style="padding-bottom: 0;">
-    <div class="project-header">
-      <p class="project-label">02</p>
-      <h2 class="project-title">SundayAtlas</h2>
-      <p class="project-tagline">AI&#8209;Powered Travel Planning</p>
-    </div>
-  </div>
-  <div class="phone-gallery-wrapper">
-    <div class="phone-gallery">
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-home.webp" alt="Home" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Home</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-destinations.webp" alt="Destinations" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Destinations</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-itinerary.webp" alt="Itinerary" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Itinerary</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-map.webp" alt="Map" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Map</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-inspo.webp" alt="Inspo" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Inspo</p>
-      </div>
-    </div>
-  </div>
-  <div class="section-inner section-pad" style="padding-top: 0;">
-    <div class="story">
-      <div class="story-step">
-        <p class="step-label">The Problem</p>
-        <p class="step-text">Planning a trip means juggling 5&#8211;10 different platforms.</p>
-        <p class="step-detail">Itineraries in one tab. Hotels in another. Activities somewhere else. Bookings in a fourth. The experience is fragmented, repetitive, and exhausting.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Insight</p>
-        <p class="step-text">One conversation. The entire trip.</p>
-        <p class="step-detail">A single conversational interface that consolidates itinerary creation, accommodation research, activity discovery, and booking, eliminating the tab-switching chaos of modern travel planning.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Prototype</p>
-        <p class="step-text">An AI travel planner that replaces the mess with a single flow.</p>
-        <p class="step-detail">Built with React, TypeScript, and the Anthropic API. Features a streaming AI concierge that generates personalized day-by-day itineraries with real recommendations, structured parsing, and trip persistence.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Takeaway</p>
-        <p class="step-text">Trust is the product, not the itinerary.</p>
-        <p class="step-detail">Users don&#8217;t abandon trip planners because the suggestions are bad. They abandon them because they don&#8217;t trust a single tool to replace their own research. The real design challenge is earning that trust incrementally.</p>
-      </div>
-    </div>
-    <div class="proto-link">
-      <a href="https://sundayatlas.vercel.app/" target="_blank" rel="noopener">View the prototype <span>&#8250;</span></a>
     </div>
   </div>
 </section>
