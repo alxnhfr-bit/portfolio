@@ -53,6 +53,15 @@
     min-height: 100vh; display: flex; flex-direction: column; align-items: center;
     justify-content: center; text-align: center; padding: 120px 24px 80px; position: relative;
   }
+  .hero-avatar {
+    width: 112px; height: 112px; border-radius: 999px; object-fit: cover;
+    margin-bottom: 28px; display: block;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+    opacity: 0; transform: translateY(16px) scale(0.96);
+    animation: avatarIn 1s cubic-bezier(0.25,0.46,0.45,0.94) 0.1s forwards;
+  }
+  @keyframes avatarIn { to { opacity: 1; transform: translateY(0) scale(1); } }
   .hero-title {
     font-family: var(--heading); font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 700;
     letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 20px;
@@ -230,6 +239,7 @@
   }
   @media (max-width: 600px) {
     .hero { min-height: 85vh; padding: 100px 20px 60px; }
+    .hero-avatar { width: 88px; height: 88px; margin-bottom: 22px; }
     .section-pad { padding: 80px 20px; }
     .story { gap: 48px; }
     .project-header { margin-bottom: 56px; }
@@ -291,6 +301,7 @@
 </nav>
 
 <section class="hero">
+  <img class="hero-avatar" src="avatar.webp" width="112" height="112" alt="Alexander Neuhofer" fetchpriority="high">
   <h1 class="hero-title">Alexander Neuhofer</h1>
   <p class="hero-role">Product Builder</p>
   <p class="hero-subtitle">I find friction in everyday experiences and turn it into focused, AI&#8209;powered products.</p>
