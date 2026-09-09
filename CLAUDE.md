@@ -53,7 +53,7 @@ Links are ink with `text-underline-offset: 5px` and `text-decoration-color: rgba
 - Meta, status, nav, footer and "Case study" 13px; diagram node label 12px, node text 13px/1.4
 
 ### Layout and shape
-- Container `max-width: 1560px`, side padding `clamp(16px, 3vw, 40px)` (the `.container` class)
+- Container `max-width: 1560px`, side padding `--pad-x: clamp(16px, 5vw, 80px)` (the `.container` class). The design reference used `clamp(16px, 3vw, 40px)`; it was widened on request for more white space at the page edges, which also caps the grid at two columns (see Responsive Behaviour)
 - Grid `repeat(auto-fit, minmax(min(100%, 480px), 1fr))`, gap 20px. SundayAtlas spans all columns
 - Radii: tile 28px, tile screens 18px, drawer screens 16px, tile diagram cards 14px, drawer diagram cards 12px, drawer panels 20px, buttons 999px
 - Shadows: tile screens `0 20px 40px -20px rgba(23,23,26,0.3)`; tile diagram cards `0 12px 28px -18px rgba(23,23,26,0.25)`; tile hover `0 36px 64px -44px rgba(23,23,26,0.4)`; drawer `-24px 0 80px rgba(23,23,26,0.12)`
@@ -146,7 +146,6 @@ Timing and focus details that are easy to regress:
 
 ### Inherited from the design reference (faithful, not bugs)
 These all follow from the reference's own `vw`-based `clamp()` values. Changing any of them means deliberately diverging from the approved design, so they were left as-is.
-- **Three columns on very wide screens**: above roughly 1590px the `auto-fit` grid fits three 480px columns inside the 1560px container, so row two becomes Signal, JobAgent, Rise and BrewLab sits alone on row three. Cap it at two with `repeat(auto-fit, minmax(min(100%, 700px), 1fr))` if the wide layout is ever unwanted.
 - **Flagship fan is side-cropped on narrow screens**: `clamp(120px, 13vw, 176px)` floors at 120px for viewports up to ~923px, so the five-phone cluster is a fixed 504px while the stage is only ~358px at 390px. The outer two phones show as slivers. Scaling the overlap with the phone width, or dropping to three phones below ~540px, would fix it at the cost of fidelity.
 - **Diagram fade crosses card two below ~1024px**: the `mask-image` tail is 30% of the stage height, so at the 240px minimum height it starts mid-card. A fixed tail (`linear-gradient(to bottom, #000 calc(100% - 56px), transparent)`) would keep card two fully opaque at every height.
 - **Compositions underfill the 768 to 1042px band**: phone widths track `vw` while tile width tracks the grid column count, so single-column tiles in that band have wide empty margins. `container-type: inline-size` on `.tile` plus `cqw` units would make the fan track the tile instead.
@@ -158,9 +157,8 @@ These all follow from the reference's own `vw`-based `clamp()` values. Changing 
 
 ## Responsive Behaviour
 Everything is fluid via `clamp()` and the auto-fit grid; there are no hand-written width breakpoints.
-- **<= ~1050px**: tiles stack to one column
-- **~1050px to ~1590px**: two columns
-- **> ~1590px**: three columns (see Known Issues)
+- **<= ~1089px**: tiles stack to one column
+- **> ~1089px**: two columns. The widened `--pad-x` leaves a 1400px content box at the 1560px cap, which is under the 1480px three 480px tracks would need, so the grid never reaches three columns. Row one is SundayAtlas full width, then Signal / JobAgent, then Rise / BrewLab
 - **Drawer**: `width: min(100%, 600px)`, so full width on small screens
 - Verified with no horizontal overflow at 390, 768, 1024, 1440 and 1920px
 
