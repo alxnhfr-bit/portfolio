@@ -232,6 +232,13 @@
   .cs-tagline { font-size: 19px; line-height: 1.45; color: var(--text-2); }
   .cs-live { align-self: flex-start; font-size: 15px; font-weight: 500; }
 
+  .cs-flow { display: flex; flex-direction: column; gap: 8px; }
+  .cs-flow video {
+    display: block; width: 100%; height: auto; aspect-ratio: 16 / 9;
+    border-radius: 16px; border: 1px solid var(--hair); background: var(--img-ph);
+  }
+  .cs-flow figcaption { font-size: 12px; color: var(--text-3); }
+
   .strip {
     display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none;
     padding: 4px 0 8px 4px; margin: 0 -4px;
@@ -461,6 +468,14 @@
         <p class="cs-tagline">AI travel planning, powered by the creators you trust.</p>
         <a class="link-u cs-live" href="https://sundayatlas.vercel.app/" target="_blank" rel="noopener" aria-label="Try SundayAtlas, open the live product">Try SundayAtlas <span aria-hidden="true">&#8599;</span></a>
       </div>
+      <figure class="cs-flow">
+        <video controls playsinline muted preload="none" width="1280" height="720"
+               poster="sundayatlas-flow-poster.webp"
+               data-src="sundayatlas-flow.mp4"
+               aria-label="Click-through of a trip being planned in SundayAtlas"></video>
+        <figcaption>A week in Bangkok, planned on a phone</figcaption>
+        <noscript><a class="link-u" href="sundayatlas-flow.mp4">Watch the click-through <span aria-hidden="true">&#8599;</span></a></noscript>
+      </figure>
       <div class="strip">
         <figure><img src="sundayatlas-landing.webp" alt="SundayAtlas landing screen with the trip composer" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Landing</figcaption></figure>
         <figure><img src="sundayatlas-trips.webp" alt="SundayAtlas collection of saved trips" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Your trips</figcaption></figure>
@@ -785,11 +800,29 @@
     try { closeBtn.focus({ preventScroll: true }); } catch (e) { closeBtn.focus(); }
   }
 
+  /* Videos carry data-src rather than src, so nothing downloads until the
+     case study that holds them is actually opened. */
+  function hydrateVideo(root) {
+    if (!root) return;
+    var v = root.querySelector('video[data-src]');
+    if (v && !v.getAttribute('src')) v.setAttribute('src', v.getAttribute('data-src'));
+  }
+  function stopVideo(root) {
+    if (!root) return;
+    var v = root.querySelector('video');
+    if (v && !v.paused) v.pause();
+  }
+
   function setActive(id) {
     IDS.forEach(function (key) {
-      if (articles[key]) articles[key].classList.toggle('is-active', key === id);
+      var article = articles[key];
+      if (!article) return;
+      var on = key === id;
+      article.classList.toggle('is-active', on);
+      if (!on) stopVideo(article);
     });
     activeId = id;
+    hydrateVideo(articles[id]);
     prime(articles[id], true);
   }
 
@@ -833,6 +866,7 @@
     /* Disarm the focus guard before restoring focus, or the focusin
        handler bounces it straight back into the closing panel. */
     isOpen = false;
+    if (activeId) stopVideo(articles[activeId]);
     panel.classList.remove('is-open');
     overlay.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');

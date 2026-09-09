@@ -18,7 +18,19 @@ Single `index.html`. No build step, no dependencies, no framework. Plain HTML/CS
 - `rise-{dashboard,training,ai-coach,wellbeing,supplements}.webp` (~600x1194)
 - `brewlab-{landing,recipes,ratio,timer,shop}.webp` (~600x1132)
 
-To convert or resize images use Python Pillow (`pip3 install --user Pillow`). Note `sips` can read WebP but cannot write it.
+To convert or resize images use Python Pillow via **`/usr/bin/python3`**, which already has it; the Homebrew `python3` first on PATH does not, and refuses `pip install` under PEP 668. Note `sips` can read WebP but cannot write it.
+
+### Video in the repo root
+- `sundayatlas-flow.mp4` (1280x720, 36s, ~1.15MB) and `sundayatlas-flow-poster.webp` (17KB)
+
+The uncompressed 19.4MB source (`Flow Video - Field Notes.mp4`) is gitignored and stays local. Re-encode with ffmpeg, not `avconvert`, whose presets are quality-targeted and barely shrink the file (best was 5.5MB, and its HEVC preset made it *larger*):
+
+```
+ffmpeg -i "source.mp4" -vf scale=1280:720 -c:v libx264 -preset slow -crf 30 \
+  -pix_fmt yuv420p -an -movflags +faststart sundayatlas-flow.mp4
+```
+
+`-an` drops audio (the source has no audio track), `+faststart` lets it stream before fully downloading. CRF 30 at 1280x720 is visually indistinguishable from the 1920x1080 source at the size the drawer renders it, and gives retina headroom for the ~520px display width.
 
 ## Design System
 
@@ -106,6 +118,7 @@ main
     - sticky header "Case study" + Close pill
     - five <article class="case-study" id="sundayatlas|signal|jobagent|rise|brewlab">
         meta row, serif h2, tagline, optional live link
+        SundayAtlas only: the flow video (figure.cs-flow) above the strip
         screens strip (SundayAtlas, Rise, BrewLab) or diagram panel (Signal, JobAgent)
         four story rows: Problem / Insight / Product|Build|Prototype / Takeaway
         SundayAtlas only: four feature lists in a 2-col grid
@@ -127,6 +140,8 @@ Because of this, **never move the case-study content into JavaScript** and never
 
 ### Drawer behavior
 Open on tile click (`preventDefault`, `history.replaceState` to `#id`), lock body scroll, mark the background `inert`, focus the Close button. Close via the Close button, overlay click or Escape: animate out, unmount the active article after 500ms, restore scroll, drop `inert`, clear the hash, return focus to the tile that opened it. `#hash` deep-links into a case study on load and on `hashchange`. "Next" swaps the active article, scrolls the panel to top and re-focuses Close.
+
+The SundayAtlas flow video carries **`data-src` rather than `src`**, plus `preload="none"`. `setActive()` calls `hydrateVideo()` to attach the real `src` only when that case study is opened, so the landing page downloads none of the 1.15MB (only the 17KB poster), and the file is not fetched at all until someone presses play. `stopVideo()` pauses it when you switch to another case study or close the drawer. A `<noscript>` link to the mp4 sits inside the figure so it stays reachable without JS.
 
 Timing and focus details that are easy to regress:
 - The drawer uses a **forced reflow** (`void panel.offsetWidth`) before adding `.is-open`, not `requestAnimationFrame`. rAF does not fire in a hidden or throttled tab, which left deep-linked drawers stuck closed.
