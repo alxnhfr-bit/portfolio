@@ -4,123 +4,174 @@
 - **Repo**: `github.com/alxnhfr-bit/portfolio`
 - **Live URL**: `https://alxnhfr-bit.github.io/portfolio/`
 - **Hosting**: GitHub Pages (main branch, single `index.html`)
-- **File**: Self-contained HTML (~2.5 MB) with 15 base64-embedded screenshots
+- **File**: Self-contained `index.html` (~50 KB) plus 16 `.webp` images in the repo root
 
 ## Owner
 Alexander Neuhofer - Senior PM at Zalando, Berlin. Building AI product prototypes independently. Portfolio targets consumer PM roles in APAC.
 
 ## Architecture
-Single `index.html` file. No build step, no dependencies, no framework. Pure HTML/CSS/JS with Google Fonts loaded via CDN. All 15 screenshots are base64-encoded JPEG inline in `<img>` tags. Deploy by pushing `index.html` to the repo.
+Single `index.html`. No build step, no dependencies, no framework. Plain HTML/CSS/JS with Google Fonts via one `<link>`. All CSS lives in one `<style>` block in the head; all JS in one `<script>` at the end of the body. Images are external `.webp` files referenced by relative path (never base64). Deploy by pushing `index.html` to `main`.
+
+### Images in the repo root
+`avatar.webp` (256x256) and 15 screenshots, all 600px wide:
+- `sundayatlas-{home,destinations,itinerary,map,inspo}.webp` (600x1304)
+- `rise-{dashboard,training,ai-coach,wellbeing,supplements}.webp` (~600x1194)
+- `brewlab-{landing,recipes,ratio,timer,shop}.webp` (~600x1132)
+
+To convert or resize images use Python Pillow (`pip3 install --user Pillow`). Note `sips` can read WebP but cannot write it.
 
 ## Design System
 
 ### Style
-Apple product page aesthetic - full-viewport sections, alternating dark/light backgrounds, sticky frosted-glass nav, scroll-triggered animations.
+Quiet, light editorial gallery. Large serif headline, five tinted project tiles with the app screens composed like product shots, and a slide-in drawer holding each full case study. No accent color; emphasis comes from the serif display face and generous whitespace.
 
-### Fonts
-- **Headings**: Inter Tight (weights 400-700)
-- **Body**: DM Sans (weights 400-500)
-- Loaded from Google Fonts CDN
+### Fonts (one Google Fonts link)
+- **Display**: Instrument Serif 400 (h1, project names in tiles and drawer)
+- **UI/body**: Instrument Sans 400/500/600
 
 ### Colors (CSS custom properties)
 ```
---white: #fbfbfd
---black: #1d1d1f
---gray-bg: #f5f5f7
---dark-bg: #000
---blue: #2997ff
---text-light: #86868b
---text-dark-muted: #a1a1a6
+--bg:         #fcfcfb   page background
+--ink:        #17171a   primary text, dots, dark diagram cards
+--text-2:     #55555a   secondary text, taglines, detail paragraphs
+--text-3:     #6b6b70   tertiary, meta, labels, captions
+--hair:       #e8e8e6   hairline rules and image borders
+--btn-border: #e0e0de   pill button border
+--dot-muted:  #b3b3b6   status dot for Prototype
+--img-ph:     #f0f0ee   image placeholder background
 ```
+Tile tints are `oklch()` with a hex fallback declared first:
+SundayAtlas `#f6efe1` / `oklch(0.955 0.025 75)`; Signal `#eceff7` / `oklch(0.955 0.018 250)`; JobAgent `#f4edf5` / `oklch(0.955 0.02 320)`; Rise `#e6f4ec` / `oklch(0.955 0.025 160)`; BrewLab `#f7ece3` / `oklch(0.95 0.025 50)`. Drawer diagram panels: Signal `oklch(0.965 0.012 250)`, JobAgent `oklch(0.965 0.012 320)`.
 
-### Layout
-- Max content width: 760px (`.section-inner`)
-- Nav max width: 1024px
-- Section padding: 120px vertical, 24px horizontal
-- Phone gallery: horizontally scrollable flex container
+Links are ink with `text-underline-offset: 5px` and `text-decoration-color: rgba(23,23,26,0.25)`, going to full ink on hover. Overlay is `rgba(23,23,26,0.28)` + `backdrop-filter: blur(3px)`.
 
-### iPhone Mockups
-CSS-only frames with:
-- Dynamic Island (pseudo-element)
-- Titanium gradient finish (dark and light variants)
-- Side buttons (power + volume via `::before` / `::after`)
-- Screen glare overlay
-- 5px padding around screen
-- Border radius: 36px outer, 32px screen
-- Width: 230px (desktop), 190px (tablet), 160px (mobile)
+### Type scale
+- h1 `clamp(44px, 7.4vw, 116px)`, line-height 0.96, letter-spacing -0.022em, `text-wrap: balance`, max-width 1240px
+- Tile name `clamp(28px, 2.6vw, 36px)` serif; tile number 13px; tile tagline 15px/1.45
+- Drawer h2 `clamp(40px, 5vw, 56px)` serif; drawer tagline 19px/1.45
+- Story: label 12px uppercase 0.06em; statement 19px/500; detail 15px/1.6
+- Meta, status, nav, footer and "Case study" 13px; diagram node label 12px, node text 13px/1.4
 
-### Animations
-- **Hero**: staggered fadeIn (0.2s - 1.2s delays)
-- **Phone galleries**: `scaleReveal` animation triggered by IntersectionObserver (threshold 0.15), staggered 0.12s per phone
-- **Story steps**: CSS transition on `.visible` class (opacity + translateY)
-- **Scroll hint**: float animation, fades on scroll > 100px
+### Layout and shape
+- Container `max-width: 1560px`, side padding `clamp(16px, 3vw, 40px)` (the `.container` class)
+- Grid `repeat(auto-fit, minmax(min(100%, 480px), 1fr))`, gap 20px. SundayAtlas spans all columns
+- Radii: tile 28px, tile screens 18px, drawer screens 16px, tile diagram cards 14px, drawer diagram cards 12px, drawer panels 20px, buttons 999px
+- Shadows: tile screens `0 20px 40px -20px rgba(23,23,26,0.3)`; tile diagram cards `0 12px 28px -18px rgba(23,23,26,0.25)`; tile hover `0 36px 64px -44px rgba(23,23,26,0.4)`; drawer `-24px 0 80px rgba(23,23,26,0.12)`
 
-### Dark Mode Override
-Forced light mode via `<meta name="color-scheme" content="light only">` and `@media (prefers-color-scheme: dark)` overrides to prevent OS dark mode from breaking the design.
+### Tile screen compositions
+Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately cropped by its bottom edge. They overlap via negative margins and stack with z-index:
+- SundayAtlas (flagship, stage `clamp(280px, 30vw, 420px)`): inspo (mt 64, mr -24, z1), destinations (mt 32, mr -24, z2), home (z3), itinerary (mt 32, ml -24, z2), map (mt 64, ml -24, z1). Screens `clamp(120px, 13vw, 176px)`
+- Rise and BrewLab (stage `clamp(240px, 26vw, 340px)`): left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). Screens `clamp(120px, 12vw, 160px)`
+- Signal and JobAgent have no screenshots. They show a column of white diagram cards joined by 1px connectors, faded out with `mask-image: linear-gradient(to bottom, #000 70%, transparent 100%)`
+
+**Images must keep `height: auto` in CSS.** They carry `width`/`height` attributes for CLS, and without `height: auto` that HTML `height` attribute (a presentational hint) beats `aspect-ratio` and the phones render full-height and hugely zoomed.
+
+### Animation
+- Tiles and drawer content fade up on reveal: opacity 0 to 1 and `translate: 0 14px` to 0, 0.6s `cubic-bezier(0.22,1,0.36,1)`, via IntersectionObserver (threshold 0.08, rootMargin `0 0 -6% 0`). Elements already in view on first load do not animate
+- The reveal uses the CSS `translate` property, not `transform`, so the tile's `transform: translateY(-4px)` hover composes with it instead of fighting it
+- Tile hover: lift 4px, 0.5s `cubic-bezier(0.22,1,0.36,1)`
+- Drawer slide: `transform` 0.5s `cubic-bezier(0.32,0.72,0,1)`; overlay opacity 0.4s
+
+### Forced light mode
+`<meta name="color-scheme" content="light only">` plus a `@media (prefers-color-scheme: dark)` block that pins `background-color`/`color` so OS dark mode cannot invert the palette.
+
+### Reduced motion
+`@media (prefers-reduced-motion: reduce)` collapses all animation and transition durations and forces revealed elements visible. The JS also checks `matchMedia('(prefers-reduced-motion: reduce)')` and skips priming reveals entirely.
 
 ## Page Structure
 
 ```
-Nav (fixed, frosted glass, toggles dark class over dark sections)
-Hero
-  - "Alexander Neuhofer."
-  - "Product Builder"
-  - Tagline
-  - LinkedIn CTA
-  - About line
-  - Scroll hint chevron
+Top bar (.topbar, not sticky)
+  - avatar 28px + "Alexander Neuhofer"
+  - LinkedIn, GitHub
 
-Section 1: Rise (dark bg, id="rise")
-  - 01 / Rise / AI Health & Fitness OS
-  - 5 phones: Dashboard, Training, AI Coach, Wellbeing, Supplements
-  - Story: Problem > Insight > Prototype > Takeaway
-  - Tool credit: "Built with Lovable."
-  - Link: https://rise-health-os.lovable.app/
+Hero (header.hero)
+  - h1: "I find friction in everyday experiences and turn it into focused, AI-powered products."
+        (non-breaking hyphen &#8209; in AI-powered)
+  - byline + "Connect on LinkedIn" / "GitHub"
 
-Section 2: SundayAtlas (light bg, id="sundayatlas")
-  - 02 / SundayAtlas / AI-Powered Travel Planning
-  - 5 phones: Home, Destinations, AI Concierge, Itinerary, Trip Dashboard
-  - Story: Problem > Insight > Prototype > Takeaway
-  - Tool credit: "Built with React, TypeScript, and the Anthropic API."
-  - Link: https://sundayatlas.vercel.app/
+main
+  div.container.work
+    - header row: "Selected work" / "Click a project for the case study"
+    - grid of five tiles, each an <a href="#id" data-open="id">:
+        01 SundayAtlas  Live . Flagship   (spans all columns, 5 screens)
+        02 Signal       Live . Runs weekly (eval-loop diagram)
+        03 JobAgent     Live . Runs daily  (daily-pipeline diagram, dark "3 . Score" card)
+        04 Rise         Prototype          (3 screens)
+        05 BrewLab      Prototype          (3 screens)
 
-Section 3: BrewLab (dark bg, id="brewlab")
-  - 03 / BrewLab / AI Coffee Brewing Assistant
-  - 5 phones: Landing, Recipes, Ratio, Timer, Shop
-  - Story: Problem > Insight > Prototype > Takeaway
-  - Tool credit: "Built with Claude; landing animation crafted with Kling AI."
-  - Link: https://alxnhfr-bit.github.io/brewlab/
+  div.drawer-overlay
+
+  section.drawer  (the case studies)
+    - sticky header "Case study" + Close pill
+    - five <article class="case-study" id="sundayatlas|signal|jobagent|rise|brewlab">
+        meta row, serif h2, tagline, optional live link
+        screens strip (SundayAtlas, Rise, BrewLab) or diagram panel (Signal, JobAgent)
+        four story rows: Problem / Insight / Product|Build|Prototype / Takeaway
+        SundayAtlas only: four feature lists in a 2-col grid
+        "Next NN Name" pill linking to the next project (wraps 05 to 01)
 
 Footer
-  - alxnhfr@gmail.com (encoded as &#64; to prevent Cloudflare email obfuscation)
-  - LinkedIn link
-  - "Alexander Neuhofer - 2025"
+  - "Alexander Neuhofer . 2026" / GitHub, LinkedIn
+  - No email is shown; the design links GitHub instead
 ```
 
+The case studies sit **inside `<main>` and before `<footer>`** on purpose. With JS off they are the bulk of the page's content, so they must not fall outside the main landmark or after the contentinfo landmark. `position: fixed` still resolves against the viewport from there because no ancestor creates a containing block.
+
+### Progressive enhancement (important)
+The case studies are **real content in the DOM**, not JS-generated. An inline script in the head adds a `js` class to `<html>`.
+- **Without JS**: `.drawer` is a static block at the end of the page, all five case studies are visible, the overlay and Close button are hidden, tiles are ordinary anchors that jump to their case study, and "Next" is an ordinary link.
+- **With JS**: the same markup becomes a fixed slide-in drawer; only `.case-study.is-active` is displayed.
+
+Because of this, **never move the case-study content into JavaScript** and never hide it with CSS that is not scoped under `html.js`.
+
+### Drawer behavior
+Open on tile click (`preventDefault`, `history.replaceState` to `#id`), lock body scroll, mark the background `inert`, focus the Close button. Close via the Close button, overlay click or Escape: animate out, unmount the active article after 500ms, restore scroll, drop `inert`, clear the hash, return focus to the tile that opened it. `#hash` deep-links into a case study on load and on `hashchange`. "Next" swaps the active article, scrolls the panel to top and re-focuses Close.
+
+Timing and focus details that are easy to regress:
+- The drawer uses a **forced reflow** (`void panel.offsetWidth`) before adding `.is-open`, not `requestAnimationFrame`. rAF does not fire in a hidden or throttled tab, which left deep-linked drawers stuck closed.
+- Focus must be set **after** `.is-open` lands, because the panel is `visibility: hidden` until then and a hidden element cannot take focus.
+- `close()` flips the `isOpen` flag **synchronously, before** restoring focus. The focus guard keys off that flag, so if it is still set the guard bounces focus straight back into the closing panel and the tile never gets it.
+- `switchTo()` must re-focus Close: the "Next" link lives inside the article being unmounted, so focus would otherwise fall to `<body>`, outside the open dialog.
+- On a deep link the browser scrolls the panel to the target article, so `panel.scrollTop` is reset again on `load` and via short timeouts.
+- The drawer wiring is attached **before** the reveal setup, and the reveal work is wrapped in `try`/`catch` that strips `.reveal` on failure. `html.js .case-study { display: none }` is applied by the head script unconditionally, so a throw in the decorative layer must never be able to leave the case studies unreachable.
+
 ## Content Rules
-- **No em dashes** in any content. Use commas, semicolons, or periods instead.
-- **No mention of "Lovable" by name** in SundayAtlas content (it was rebuilt with React/TypeScript/Claude Code).
-- Rise and BrewLab can mention Lovable.
-- Email `@` symbol must be HTML-encoded as `&#64;` to prevent Cloudflare email protection from mangling it on GitHub Pages.
+- **No em dashes or en dashes** in any content, in any encoding (literal, `&#8212;`, `&mdash;`, `&#8211;`, `&ndash;`). Use commas, semicolons, colons or periods.
+- **No mention of "Lovable" by name** in SundayAtlas content. Rise and BrewLab may mention it.
+- If an email is ever shown, encode the `@` as `&#64;` so Cloudflare's email protection cannot mangle it on GitHub Pages. The current design shows no email.
+- Case-study copy is fixed. Do not rewrite, shorten or reorder it without being asked.
 
 ## Known Issues / Pending Work
-- **Phone height inconsistency**: SundayAtlas screenshots have a different aspect ratio than Rise/BrewLab, making those phone mockups taller. Fix: change `.iphone-screen img` from `height: auto` to `height: 480px; object-fit: cover; object-position: top;` (value adjustable).
-- **Year in footer**: Currently says 2025, may need updating.
 
-## Responsive Breakpoints
-- **> 900px**: Full desktop (230px phones)
-- **601-900px**: Tablet (190px phones, tighter gallery gaps)
-- **<= 600px**: Mobile (160px phones, reduced padding, smaller nav gaps)
+### Inherited from the design reference (faithful, not bugs)
+These all follow from the reference's own `vw`-based `clamp()` values. Changing any of them means deliberately diverging from the approved design, so they were left as-is.
+- **Three columns on very wide screens**: above roughly 1590px the `auto-fit` grid fits three 480px columns inside the 1560px container, so row two becomes Signal, JobAgent, Rise and BrewLab sits alone on row three. Cap it at two with `repeat(auto-fit, minmax(min(100%, 700px), 1fr))` if the wide layout is ever unwanted.
+- **Flagship fan is side-cropped on narrow screens**: `clamp(120px, 13vw, 176px)` floors at 120px for viewports up to ~923px, so the five-phone cluster is a fixed 504px while the stage is only ~358px at 390px. The outer two phones show as slivers. Scaling the overlap with the phone width, or dropping to three phones below ~540px, would fix it at the cost of fidelity.
+- **Diagram fade crosses card two below ~1024px**: the `mask-image` tail is 30% of the stage height, so at the 240px minimum height it starts mid-card. A fixed tail (`linear-gradient(to bottom, #000 calc(100% - 56px), transparent)`) would keep card two fully opaque at every height.
+- **Compositions underfill the 768 to 1042px band**: phone widths track `vw` while tile width tracks the grid column count, so single-column tiles in that band have wide empty margins. `container-type: inline-size` on `.tile` plus `cqw` units would make the fan track the tile instead.
+
+### Actual pending work
+- **`og:image` is still missing**, so shared links render a text-only card. A 1200x630 social image is the remaining SEO task.
+- **`<title>` and `og:title` still say "Product Builder"** even though the hero role line was dropped in the redesign. Kept deliberately because the existing head meta and OG tags had to be preserved.
+- **Signal has no repo link.** If the repo is made public, add a live link to the Signal case-study head like the other projects have.
+
+## Responsive Behaviour
+Everything is fluid via `clamp()` and the auto-fit grid; there are no hand-written width breakpoints.
+- **<= ~1050px**: tiles stack to one column
+- **~1050px to ~1590px**: two columns
+- **> ~1590px**: three columns (see Known Issues)
+- **Drawer**: `width: min(100%, 600px)`, so full width on small screens
+- Verified with no horizontal overflow at 390, 768, 1024, 1440 and 1920px
 
 ## How to Edit
-Since all images are base64-embedded, the file is ~2.5 MB. Recommended workflow:
 1. Clone the repo locally
 2. Edit `index.html`
-3. Test by opening in browser
-4. Push to main branch (GitHub Pages auto-deploys)
-
-To replace a screenshot: convert the new image to base64 (`base64 -w0 image.jpeg`), find the corresponding `<img src="data:image/jpeg;base64,...">` tag, and replace the base64 string. Images are in order: Rise (5), SundayAtlas (5), BrewLab (5).
+3. Preview with `python3 -m http.server 4178 --directory .` and open `http://127.0.0.1:4178/` (a plain `file://` open also works, but a server matches production)
+4. Check 390 / 768 / 1024 / 1440 / 1920px, open a case study, press Escape, and load a `#deep-link` directly
+5. Push to `main` (GitHub Pages auto-deploys)
 
 ## Related Repos
 - **BrewLab prototype**: `github.com/alxnhfr-bit/brewlab` (standalone HTML with React via CDN)
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
+- **Design handoff** for this redesign: `design_handoff_portfolio_redesign/` (README spec, `reference/Portfolio v4.dc.html` prototype, reference screenshots)

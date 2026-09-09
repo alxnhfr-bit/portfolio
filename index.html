@@ -16,645 +16,952 @@
 <meta name="twitter:description" content="Product builder shipping AI-native products. Selected work: SundayAtlas, Signal, JobAgent, Rise, BrewLab.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
   :root {
-    --white: #fbfbfd; --black: #1d1d1f; --gray-bg: #f5f5f7; --dark-bg: #000;
-    --text-light: #86868b; --text-dark-muted: #a1a1a6; --blue: #2997ff;
-    --heading: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
-    --body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --bg: #fcfcfb;
+    --ink: #17171a;
+    --text-2: #55555a;
+    --text-3: #6b6b70;
+    --hair: #e8e8e6;
+    --btn-border: #e0e0de;
+    --dot-muted: #b3b3b6;
+    --img-ph: #f0f0ee;
+    --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+    --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --pad-x: clamp(16px, 3vw, 40px);
   }
-  html { font-size: 16px; scroll-behavior: smooth; }
+
+  html { font-size: 16px; }
   body {
-    background: var(--white); color: var(--black); font-family: var(--body);
-    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    background: var(--bg); color: var(--ink); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; overflow-x: hidden; text-wrap: pretty;
+    min-height: 100vh;
   }
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-    background: rgba(251,251,253,0.72);
-    backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-bottom: 1px solid rgba(0,0,0,0.08); transition: background 0.3s, border-color 0.3s;
+  a { color: var(--ink); text-decoration: none; }
+  button { font-family: inherit; }
+
+  .container { max-width: 1560px; margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
+
+  /* ---------- Reveal (classes are added by JS only) ---------- */
+  .reveal { opacity: 0; translate: 0 14px; transition: opacity 0.6s var(--ease), translate 0.6s var(--ease); }
+  .reveal.is-in { opacity: 1; translate: 0 0; }
+
+  /* ---------- Top bar ---------- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-top: 22px; }
+  .topbar-id { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 999px; object-fit: cover; display: block; }
+  .topbar-name { font-size: 14px; font-weight: 500; }
+  .topbar-links { display: flex; align-items: center; gap: 22px; font-size: 13px; }
+  .topbar-links a { color: var(--text-3); transition: color 0.25s ease; }
+  .topbar-links a:hover { color: var(--ink); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding-top: clamp(72px, 10vw, 150px); padding-bottom: clamp(56px, 7vw, 96px); }
+  .hero h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 7.4vw, 116px);
+    line-height: 0.96; letter-spacing: -0.022em; color: var(--ink);
+    max-width: 1240px; text-wrap: balance;
   }
-  nav.dark { background: rgba(0,0,0,0.72); border-bottom-color: rgba(255,255,255,0.08); }
-  .nav-inner {
-    max-width: 1024px; margin: 0 auto; padding: 0 24px; height: 48px;
-    display: flex; align-items: center; justify-content: space-between;
+  .hero-row {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+    gap: 24px 48px; margin-top: clamp(36px, 5vw, 64px);
   }
-  .nav-name {
-    font-family: var(--heading); font-weight: 600; font-size: 0.88rem;
-    color: var(--black); text-decoration: none; transition: color 0.3s;
+  .hero-byline { font-size: 17px; line-height: 1.6; color: var(--text-2); max-width: 44ch; }
+  .hero-links {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
+    font-size: 15px; font-weight: 500; padding-bottom: 4px;
   }
-  nav.dark .nav-name { color: var(--white); }
-  .nav-links { display: flex; gap: 28px; list-style: none; }
-  .nav-links a { font-size: 0.78rem; color: var(--text-light); text-decoration: none; transition: color 0.3s; }
-  nav.dark .nav-links a { color: var(--text-dark-muted); }
-  .nav-links a:hover { color: var(--blue); }
-  .hero {
-    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; text-align: center; padding: 120px 24px 80px; position: relative;
+  .link-u {
+    color: var(--ink); display: inline-flex; align-items: center; gap: 6px;
+    text-decoration: underline; text-underline-offset: 5px;
+    text-decoration-color: rgba(23,23,26,0.25); transition: text-decoration-color 0.25s ease;
   }
-  .hero-avatar {
-    width: 112px; height: 112px; border-radius: 999px; object-fit: cover;
-    margin-bottom: 28px; display: block;
-    border: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.16);
-    opacity: 0; transform: translateY(16px) scale(0.96);
-    animation: avatarIn 1s cubic-bezier(0.25,0.46,0.45,0.94) 0.1s forwards;
+  .link-u:hover { text-decoration-color: var(--ink); }
+  .link-muted { color: var(--text-3); display: inline-flex; align-items: center; gap: 6px; transition: color 0.25s ease; }
+  .link-muted:hover { color: var(--ink); }
+
+  /* ---------- Work grid ---------- */
+  .work { padding-bottom: clamp(64px, 8vw, 112px); }
+  .work-head {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    padding: 18px 0 20px; border-top: 1px solid var(--hair); font-size: 13px; color: var(--text-3);
   }
-  @keyframes avatarIn { to { opacity: 1; transform: translateY(0) scale(1); } }
-  .hero-title {
-    font-family: var(--heading); font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 700;
-    letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 20px;
-    opacity: 0; transform: translateY(20px); animation: fadeIn 1s ease 0.2s forwards;
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 20px; }
+
+  .tile {
+    display: flex; flex-direction: column; border-radius: 28px; overflow: hidden;
+    color: var(--ink); text-decoration: none;
+    transition: transform 0.5s var(--ease), box-shadow 0.5s ease;
   }
-  .hero-role {
-    font-family: var(--heading); font-size: clamp(1.1rem, 2.5vw, 1.4rem); font-weight: 600;
-    letter-spacing: 0.04em; text-transform: uppercase; color: var(--blue);
-    margin-bottom: 16px;
-    opacity: 0; transform: translateY(16px); animation: fadeIn 1s ease 0.5s forwards;
+  .tile.reveal {
+    transition: transform 0.5s var(--ease), box-shadow 0.5s ease,
+                opacity 0.6s var(--ease), translate 0.6s var(--ease);
   }
-  .hero-subtitle {
-    font-size: clamp(1.1rem, 2.5vw, 1.35rem); color: var(--text-light); line-height: 1.5;
-    max-width: 540px; font-weight: 400;
-    opacity: 0; transform: translateY(16px); animation: fadeIn 1s ease 0.7s forwards;
+  .tile:hover { transform: translateY(-4px); box-shadow: 0 36px 64px -44px rgba(23,23,26,0.4); }
+  .tile:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .tile--wide { grid-column: 1 / -1; }
+
+  .t-sa { background: #f6efe1; background: oklch(0.955 0.025 75); }
+  .t-sg { background: #eceff7; background: oklch(0.955 0.018 250); }
+  .t-ja { background: #f4edf5; background: oklch(0.955 0.02 320); }
+  .t-ri { background: #e6f4ec; background: oklch(0.955 0.025 160); }
+  .t-bl { background: #f7ece3; background: oklch(0.95 0.025 50); }
+
+  .stage { overflow: hidden; display: flex; justify-content: center; align-items: flex-start; }
+  .stage--flagship { height: clamp(280px, 30vw, 420px); padding-top: clamp(32px, 4vw, 56px); }
+  .stage--small { height: clamp(240px, 26vw, 340px); padding-top: clamp(28px, 4vw, 48px); }
+
+  .shot {
+    display: block; flex: 0 0 auto; height: auto; object-fit: cover; object-position: top;
+    border-radius: 18px; border: 1px solid rgba(23,23,26,0.08);
+    box-shadow: 0 20px 40px -20px rgba(23,23,26,0.3); position: relative;
   }
-  .hero-cta { margin-top: 36px; opacity: 0; animation: fadeIn 1s ease 1s forwards; }
-  .hero-cta a {
-    font-size: 1.15rem; color: var(--blue); text-decoration: none;
-    display: inline-flex; align-items: center; gap: 6px; font-weight: 500; transition: gap 0.3s;
-  }
-  .hero-cta a:hover { gap: 10px; }
-  .hero-cta a span { font-size: 1.3rem; line-height: 1; }
-  .hero-byline { margin-top: 64px; opacity: 0; animation: fadeIn 1s ease 1.1s forwards; }
-  .hero-byline p {
-    font-size: 0.85rem; color: var(--text-light); line-height: 1.6;
-    max-width: 480px; text-align: center;
-  }
-  .scroll-hint {
-    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-    opacity: 0; animation: fadeIn 1s ease 1.2s forwards, float 3s ease-in-out 1.5s infinite;
-  }
-  .scroll-hint svg { width: 24px; height: 24px; color: var(--text-light); }
-  .scroll-hint.hidden { animation: none; }
-  .section-light { background: var(--gray-bg); }
-  .section-dark { background: var(--dark-bg); color: var(--white); }
-  .section-pad { padding: 120px 24px; }
-  .section-inner { max-width: 760px; margin: 0 auto; }
-  .project-header { text-align: center; margin-bottom: 72px; }
-  .project-label {
-    font-family: var(--heading); font-size: 0.78rem; font-weight: 600;
-    letter-spacing: 0.04em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px;
-  }
-  .project-title {
-    font-family: var(--heading); font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 700;
-    letter-spacing: -0.035em; line-height: 1.08; margin-bottom: 12px;
-  }
-  .project-tagline { font-size: 1.15rem; color: var(--text-light); font-weight: 400; }
-  .section-dark .project-tagline { color: var(--text-dark-muted); }
-  .status-chip {
-    display: inline-block; margin-left: 10px; padding: 3px 10px;
-    border-radius: 999px; background: rgba(41,151,255,0.16);
-    color: var(--blue); font-size: 0.66rem; font-weight: 600;
-    letter-spacing: 0.08em; vertical-align: middle;
-  }
-  .status-chip.muted { background: rgba(134,134,139,0.14); color: var(--text-light); }
-  .section-dark .status-chip.muted { background: rgba(255,255,255,0.09); color: var(--text-dark-muted); }
-  .phone-gallery-wrapper { overflow-x: auto; padding: 60px 0 80px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .phone-gallery-wrapper::-webkit-scrollbar { display: none; }
-  .phone-gallery {
-    display: flex; gap: 36px; align-items: center;
-    padding: 0 40px; width: fit-content; margin: 0 auto;
-  }
-  .iphone-wrap {
-    flex: 0 0 auto; scroll-snap-align: center;
-    opacity: 0; transform: scale(0.82) translateY(40px);
-  }
-  .iphone-wrap.visible {
-    animation: scaleReveal 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  }
-  .iphone-wrap:nth-child(1).visible { animation-delay: 0s; }
-  .iphone-wrap:nth-child(2).visible { animation-delay: 0.12s; }
-  .iphone-wrap:nth-child(3).visible { animation-delay: 0.24s; }
-  .iphone-wrap:nth-child(4).visible { animation-delay: 0.36s; }
-  .iphone-wrap:nth-child(5).visible { animation-delay: 0.48s; }
-  @keyframes scaleReveal {
-    0% { opacity: 0; transform: scale(0.82) translateY(40px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  .iphone {
-    width: 230px; position: relative;
-    background: linear-gradient(145deg, #2a2a2e 0%, #1a1a1d 50%, #222225 100%);
-    border-radius: 36px; padding: 5px;
-    box-shadow:
-      0 0 0 1px #3a3a3d, 0 0 0 2px #1a1a1c,
-      inset 0 0 0 0.5px rgba(255,255,255,0.06),
-      0 25px 70px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
-  }
-  .section-light .iphone {
-    background: linear-gradient(145deg, #e0e0e2 0%, #c8c8cc 50%, #d4d4d7 100%);
-    box-shadow:
-      0 0 0 1px #c0c0c3, 0 0 0 2px #b0b0b3,
-      inset 0 0 0 0.5px rgba(255,255,255,0.4),
-      0 25px 70px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.08);
-  }
-  .section-light .iphone::before {
-    background: linear-gradient(180deg, #c8c8cc, #b8b8bc, #c8c8cc);
-  }
-  .section-light .iphone::after {
-    background: linear-gradient(180deg, #c8c8cc, #b8b8bc, #c8c8cc);
-    box-shadow: 0 34px 0 0 #bbbbbf;
-  }
-  .section-light .phone-label { color: var(--text-light); }
-  .iphone::before {
-    content: ''; position: absolute; right: -2px; top: 100px;
-    width: 2.5px; height: 36px;
-    background: linear-gradient(180deg, #3a3a3d, #2a2a2e, #3a3a3d);
-    border-radius: 0 2px 2px 0;
-  }
-  .iphone::after {
-    content: ''; position: absolute; left: -2px; top: 82px;
-    width: 2.5px; height: 24px;
-    background: linear-gradient(180deg, #3a3a3d, #2a2a2e, #3a3a3d);
-    border-radius: 2px 0 0 2px;
-    box-shadow: 0 34px 0 0 #2e2e31;
-  }
-  .iphone-screen {
-    position: relative; width: 100%; aspect-ratio: 1 / 2.16; border-radius: 32px;
-    overflow: hidden; background: #000;
-  }
-  .iphone-screen img {
-    position: absolute; top: 6%; left: 0;
-    width: 100%; height: 90%;
-    object-fit: cover; display: block;
-  }
-  .iphone-screen::before {
-    content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-    width: 68px; height: 20px; background: #000; border-radius: 20px; z-index: 10;
-  }
-  .iphone-screen::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(165deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 25%, transparent 50%);
-    border-radius: 32px; pointer-events: none; z-index: 5;
-  }
-  .phone-label {
-    text-align: center; margin-top: 16px; font-size: 0.72rem; font-weight: 500;
-    letter-spacing: 0.04em; color: var(--text-dark-muted); padding-bottom: 4px;
-  }
-  .feature-grid-wrap { padding: 24px 24px 96px; }
-  .feature-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
-    max-width: 900px; margin: 0 auto;
-  }
-  .feature-card {
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px; padding: 26px 24px;
-  }
-  .section-light .feature-card {
-    background: rgba(0,0,0,0.025); border-color: rgba(0,0,0,0.08);
-  }
-  .feature-card h3 {
-    font-family: var(--heading); font-size: 0.72rem; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--blue); margin-bottom: 14px;
-  }
-  .feature-card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-  .feature-card li {
-    font-size: 0.92rem; line-height: 1.55; color: var(--text-dark-muted);
-  }
-  .section-light .feature-card li { color: var(--text-light); }
-  .story { display: flex; flex-direction: column; gap: 64px; align-items: center; text-align: center; }
-  .story-step {
-    opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease;
+  .shot--flagship { width: clamp(120px, 13vw, 176px); aspect-ratio: 600 / 1304; }
+  .shot--small { width: clamp(120px, 12vw, 160px); }
+  .ar-rise { aspect-ratio: 600 / 1194; }
+  .ar-brew { aspect-ratio: 600 / 1132; }
+
+  .p-far-l  { margin-top: 64px; margin-right: -24px; z-index: 1; }
+  .p-near-l { margin-top: 32px; margin-right: -24px; z-index: 2; }
+  .p-mid    { z-index: 3; }
+  .p-near-r { margin-top: 32px; margin-left: -24px; z-index: 2; }
+  .p-far-r  { margin-top: 64px; margin-left: -24px; z-index: 1; }
+  .s-left   { margin-top: 40px; margin-right: -28px; z-index: 1; }
+  .s-mid    { z-index: 2; }
+  .s-right  { margin-top: 40px; margin-left: -28px; z-index: 1; }
+
+  .stage--diagram {
+    height: clamp(240px, 26vw, 340px); overflow: hidden;
     display: flex; flex-direction: column; align-items: center;
+    padding: clamp(28px, 4vw, 48px) 24px 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
   }
-  .story-step.visible { opacity: 1; transform: translateY(0); }
-  .step-label {
-    font-family: var(--heading); font-size: 0.72rem; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-light); margin-bottom: 12px;
+  .flow { width: min(100%, 320px); display: flex; flex-direction: column; align-items: stretch; }
+  .node {
+    background: #ffffff; border: 1px solid rgba(23,23,26,0.06); border-radius: 14px;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
+    box-shadow: 0 12px 28px -18px rgba(23,23,26,0.25);
   }
-  .section-dark .step-label { color: var(--text-dark-muted); }
-  .step-text {
-    font-size: clamp(1.3rem, 3vw, 1.75rem); font-family: var(--heading); font-weight: 600;
-    line-height: 1.38; letter-spacing: -0.02em; max-width: 620px;
+  .node--dark { background: var(--ink); border-color: var(--ink); box-shadow: 0 12px 28px -18px rgba(23,23,26,0.35); }
+  .node-label { font-size: 12px; font-weight: 500; }
+  .node-text { font-size: 13px; color: var(--text-2); line-height: 1.4; }
+  .node--dark .node-label, .pnode--dark .node-label { color: var(--bg); }
+  .node--dark .node-text, .pnode--dark .node-text { color: #c9c9cc; }
+  .conn { width: 1px; height: 14px; background: rgba(23,23,26,0.25); margin: 0 auto; }
+
+  .tile-text {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+    gap: 12px 32px; padding: 8px clamp(20px, 2.5vw, 32px) clamp(24px, 2.5vw, 32px);
   }
-  .section-dark .step-text { color: #f5f5f7; }
-  .step-detail {
-    font-size: 1rem; line-height: 1.65; color: var(--text-light); margin-top: 12px; max-width: 560px;
+  .tile-left { display: flex; flex-direction: column; gap: 8px; }
+  .tile-heading { display: flex; align-items: baseline; gap: 14px; }
+  .tile-num { font-size: 13px; color: var(--text-3); }
+  .tile-name { font-family: var(--serif); font-size: clamp(28px, 2.6vw, 36px); line-height: 1; letter-spacing: -0.01em; }
+  .tile-tagline { font-size: 15px; color: var(--text-2); line-height: 1.45; }
+  .tile-right { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 13px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--ink); display: inline-block; flex: 0 0 auto; }
+  .dot--muted { background: var(--dot-muted); }
+  .cs-cue {
+    font-weight: 500; color: var(--ink); text-decoration: underline;
+    text-underline-offset: 4px; text-decoration-color: rgba(23,23,26,0.3);
   }
-  .section-dark .step-detail { color: var(--text-dark-muted); }
-  .proto-link { text-align: center; margin-top: 72px; }
-  .proto-link a, .proto-link span {
-    font-size: 1.15rem; font-weight: 500; color: var(--blue); text-decoration: none;
-    display: inline-flex; align-items: center; gap: 6px; transition: gap 0.3s;
+
+  /* ---------- Footer ---------- */
+  .footer {
+    border-top: 1px solid var(--hair); display: flex; flex-wrap: wrap;
+    justify-content: space-between; gap: 12px 32px; font-size: 13px; color: var(--text-3);
+    padding-top: 24px; padding-bottom: 40px;
   }
-  .proto-link a:hover { gap: 10px; }
-  footer {
-    padding: 40px 24px; text-align: center; background: var(--dark-bg);
-    border-top: 1px solid rgba(255,255,255,0.06);
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { color: var(--ink); transition: color 0.25s ease; }
+  .footer-links a:hover { color: var(--text-3); }
+
+  /* ---------- Case studies: static document by default ---------- */
+  .drawer-overlay { display: none; }
+  .drawer { max-width: 1560px; margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
+  .drawer-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 16px 0; border-bottom: 1px solid var(--hair); font-size: 13px; color: var(--text-3);
   }
-  footer p { font-size: 0.78rem; color: var(--text-dark-muted); }
-  footer a { color: var(--blue); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
-  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .drawer-close {
+    appearance: none; background: transparent; border: 1px solid var(--btn-border); border-radius: 999px;
+    padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink);
+    display: inline-flex; align-items: center; gap: 8px; transition: border-color 0.25s ease;
+  }
+  .drawer-close:hover { border-color: var(--ink); }
+  html:not(.js) .drawer-close { display: none; }
+  .drawer-body { padding: clamp(28px, 4vw, 40px) 0 48px; display: flex; flex-direction: column; gap: 32px; }
+
+  /* ---------- Case studies: drawer when JS is on ---------- */
+  html.js .drawer-overlay {
+    display: block; position: fixed; inset: 0; z-index: 190;
+    background: rgba(23,23,26,0.28);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+  }
+  html.js .drawer-overlay.is-open { opacity: 1; pointer-events: auto; }
+  html.js .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
+    width: min(100%, 600px); max-width: none; margin: 0; padding: 0;
+    background: var(--bg); color: var(--ink); overflow-y: auto;
+    box-shadow: -24px 0 80px rgba(23,23,26,0.12);
+    transform: translateX(100%); visibility: hidden;
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.5s;
+  }
+  html.js .drawer.is-open { transform: translateX(0); visibility: visible; transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0s; }
+  html.js .drawer-head {
+    position: sticky; top: 0; z-index: 2; padding: 16px clamp(20px, 4vw, 40px);
+    background: rgba(252,252,251,0.92);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  }
+  html.js .drawer-body { padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 48px; }
+  html.js .case-study { display: none; }
+  html.js .case-study.is-active { display: flex; }
+
+  .case-study { display: flex; flex-direction: column; gap: 32px; }
+  .cs-head { display: flex; flex-direction: column; gap: 14px; }
+  .cs-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-3); }
+  .cs-title { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 5vw, 56px); line-height: 1; letter-spacing: -0.015em; }
+  .cs-tagline { font-size: 19px; line-height: 1.45; color: var(--text-2); }
+  .cs-live { align-self: flex-start; font-size: 15px; font-weight: 500; }
+
+  .strip {
+    display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none;
+    padding: 4px 0 8px 4px; margin: 0 -4px;
+  }
+  .strip::-webkit-scrollbar { display: none; }
+  .strip figure { margin: 0; flex: 0 0 auto; width: 150px; }
+  .strip img {
+    display: block; width: 100%; height: auto; object-fit: cover; object-position: top;
+    border-radius: 16px; border: 1px solid var(--hair); background: var(--img-ph);
+  }
+  .strip figcaption { font-size: 12px; color: var(--text-3); margin-top: 8px; }
+
+  .panel { border-radius: 20px; padding: 24px; }
+  .panel--sg { background: #edf0f7; background: oklch(0.965 0.012 250); }
+  .panel--ja { background: #f6f0f7; background: oklch(0.965 0.012 320); }
+  .panel-head {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px;
+    font-size: 12px; color: var(--text-3); margin-bottom: 16px;
+  }
+  .panel-head b { font-weight: 600; color: var(--ink); }
+  .pflow { display: flex; flex-direction: column; }
+  .pnode {
+    background: #ffffff; border: 1px solid rgba(23,23,26,0.06); border-radius: 12px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .pnode--dark { background: var(--ink); border-color: var(--ink); }
+  .pconn { width: 1px; height: 12px; background: rgba(23,23,26,0.25); margin: 0 auto; }
+  .builds {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 14px 24px; border-top: 1px solid rgba(23,23,26,0.08); margin-top: 20px; padding-top: 16px;
+  }
+  .build { display: flex; flex-direction: column; gap: 6px; }
+  .build b { font-size: 12px; font-weight: 600; }
+  .build p { font-size: 13px; line-height: 1.5; color: var(--text-2); }
+  .build ul { list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 13px; line-height: 1.5; color: var(--text-2); }
+
+  .story-row { padding: 20px 0; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 10px; }
+  .story-row:last-child { border-bottom: 1px solid var(--hair); }
+  .story-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .story-statement { font-size: 19px; font-weight: 500; line-height: 1.35; letter-spacing: -0.01em; }
+  .story-detail { font-size: 15px; line-height: 1.6; color: var(--text-2); }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 24px 28px; }
+  .feature { display: flex; flex-direction: column; gap: 10px; }
+  .feature h3 { font-size: 13px; font-weight: 600; }
+  .feature ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .feature li { font-size: 14px; line-height: 1.55; color: var(--text-2); }
+
+  .cs-next { display: flex; justify-content: flex-end; }
+  .next-btn {
+    border: 1px solid var(--btn-border); border-radius: 999px; padding: 10px 16px;
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    display: inline-flex; align-items: center; gap: 10px; transition: border-color 0.25s ease;
+  }
+  .next-btn:hover { border-color: var(--ink); }
+  .next-word { color: var(--text-3); }
+
+  /* ---------- Preferences ---------- */
   @media (prefers-color-scheme: dark) {
-    html, body { background-color: #fbfbfd !important; color: #1d1d1f !important; }
-    .hero { background-color: #fbfbfd !important; color: #1d1d1f !important; }
-    .section-light { background-color: #f5f5f7 !important; color: #1d1d1f !important; }
-    nav:not(.dark) { background: rgba(251,251,253,0.72) !important; }
+    html, body { background-color: #fcfcfb !important; color: #17171a !important; }
+    html.js .drawer { background: #fcfcfb !important; }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    *, *::before, *::after { animation: none !important; transition: none !important; }
-    .hero-avatar, .hero-title, .hero-role, .hero-subtitle, .hero-cta, .hero-byline,
-    .story-step, .iphone-wrap { opacity: 1 !important; transform: none !important; }
-    .scroll-hint { opacity: 1; }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(8px); }
-  }
-  @media (max-width: 900px) {
-    .iphone { width: 190px; border-radius: 30px; padding: 4px; }
-    .iphone-screen { border-radius: 27px; }
-    .iphone-screen::before { width: 56px; height: 17px; top: 7px; }
-    .iphone-screen::after { border-radius: 27px; }
-    .phone-gallery { gap: 24px; padding: 0 24px; }
-  }
-  @media (max-width: 800px) {
-    .feature-grid { grid-template-columns: 1fr; max-width: 560px; }
-    .feature-grid-wrap { padding: 16px 20px 64px; }
-  }
-  @media (max-width: 600px) {
-    .hero { min-height: 85vh; padding: 100px 20px 60px; }
-    .hero-avatar { width: 88px; height: 88px; margin-bottom: 22px; }
-    .section-pad { padding: 80px 20px; }
-    .story { gap: 48px; }
-    .project-header { margin-bottom: 56px; }
-    .proto-link { margin-top: 56px; }
-    .nav-name { display: none; }
-    .nav-inner { justify-content: center; }
-    .nav-links { gap: 14px; }
-    .iphone { width: 160px; border-radius: 26px; padding: 3px; }
-    .iphone-screen { border-radius: 24px; }
-    .iphone-screen::before { width: 46px; height: 14px; top: 6px; }
-    .iphone-screen::after { border-radius: 24px; }
-    .phone-gallery { gap: 16px; padding: 0 16px; }
-    .phone-gallery-wrapper { padding: 40px 0 60px; }
-    .phone-label { font-size: 0.62rem; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .reveal { opacity: 1 !important; translate: none !important; }
+    .tile:hover { transform: none; }
   }
 </style>
-<noscript><style>.story-step, .iphone-wrap { opacity: 1; transform: none; }</style></noscript>
+<noscript><style>.reveal { opacity: 1; translate: none; }</style></noscript>
 </head>
 <body>
 
-<nav id="navbar">
-  <div class="nav-inner">
-    <a href="#" class="nav-name">Alexander Neuhofer</a>
-    <ul class="nav-links">
-      <li><a href="#sundayatlas">SundayAtlas</a></li>
-      <li><a href="#signal">Signal</a></li>
-      <li><a href="#jobagent">JobAgent</a></li>
-      <li><a href="#rise">Rise</a></li>
-      <li><a href="#brewlab">BrewLab</a></li>
-    </ul>
+<div class="container topbar">
+  <div class="topbar-id">
+    <img class="topbar-avatar" src="avatar.webp" width="28" height="28" alt="Alexander Neuhofer">
+    <span class="topbar-name">Alexander Neuhofer</span>
   </div>
-</nav>
+  <div class="topbar-links">
+    <a href="https://www.linkedin.com/in/alexneuhofer" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="https://github.com/alxnhfr-bit" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div>
 
-<section class="hero">
-  <img class="hero-avatar" src="avatar.webp" width="112" height="112" alt="Alexander Neuhofer" fetchpriority="high">
-  <h1 class="hero-title">Alexander Neuhofer</h1>
-  <p class="hero-role">Product Builder</p>
-  <p class="hero-subtitle">I find friction in everyday experiences and turn it into focused, AI&#8209;powered products.</p>
-  <div class="hero-cta">
-    <a href="https://www.linkedin.com/in/alexneuhofer" target="_blank" rel="noopener">Connect on LinkedIn <span>&#8250;</span></a>
+<header class="container hero">
+  <h1>I find friction in everyday experiences and turn it into focused, AI&#8209;powered products.</h1>
+  <div class="hero-row">
+    <p class="hero-byline">Senior PM at Zalando by day. These are the products I build independently, from problem to shipped product, built and evaluated end to end.</p>
+    <div class="hero-links">
+      <a class="link-u" href="https://www.linkedin.com/in/alexneuhofer" target="_blank" rel="noopener">Connect on LinkedIn <span aria-hidden="true">&#8599;</span></a>
+      <a class="link-muted" href="https://github.com/alxnhfr-bit" target="_blank" rel="noopener">GitHub <span aria-hidden="true">&#8599;</span></a>
+    </div>
   </div>
-  <div class="hero-byline">
-    <p>Senior PM at Zalando by day. These are the products I build independently, from problem to shipped product, built and evaluated end to end.</p>
+</header>
+
+<main>
+<div class="container work">
+  <div class="work-head">
+    <span>Selected work</span>
+    <span>Click a project for the case study</span>
   </div>
-  <div class="scroll-hint">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-    </svg>
+  <div class="grid">
+
+    <a class="tile tile--wide t-sa" href="#sundayatlas" data-open="sundayatlas" data-reveal>
+      <div class="stage stage--flagship">
+        <img class="shot shot--flagship p-far-l" src="sundayatlas-inspo.webp" alt="" loading="lazy" width="600" height="1304">
+        <img class="shot shot--flagship p-near-l" src="sundayatlas-destinations.webp" alt="" loading="lazy" width="600" height="1304">
+        <img class="shot shot--flagship p-mid" src="sundayatlas-home.webp" alt="SundayAtlas screens" loading="lazy" width="600" height="1304">
+        <img class="shot shot--flagship p-near-r" src="sundayatlas-itinerary.webp" alt="" loading="lazy" width="600" height="1304">
+        <img class="shot shot--flagship p-far-r" src="sundayatlas-map.webp" alt="" loading="lazy" width="600" height="1304">
+      </div>
+      <div class="tile-text">
+        <div class="tile-left">
+          <div class="tile-heading"><span class="tile-num">01</span><span class="tile-name">SundayAtlas</span></div>
+          <p class="tile-tagline">AI travel planning, powered by the creators you trust.</p>
+        </div>
+        <div class="tile-right">
+          <span class="status"><span class="dot"></span>Live &middot; Flagship</span>
+          <span class="cs-cue">Case study</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="tile t-sg" href="#signal" data-open="signal" data-reveal>
+      <div class="stage--diagram">
+        <div class="flow">
+          <div class="node"><span class="node-label">1 &middot; Taxonomy</span><span class="node-text">Five closed labels, explicit precedence rules for ties</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="node"><span class="node-label">2 &middot; Rubric</span><span class="node-text">One document: human labeling guide and classifier prompt spec</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="node"><span class="node-label">3 &middot; Golden set</span><span class="node-text">Blind-labeled before seeing any prediction</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="node"><span class="node-label">4 &middot; Harness</span><span class="node-text">Deterministic Python scoring, no LLM judge</span></div>
+        </div>
+      </div>
+      <div class="tile-text">
+        <div class="tile-left">
+          <div class="tile-heading"><span class="tile-num">02</span><span class="tile-name">Signal</span></div>
+          <p class="tile-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
+        </div>
+        <div class="tile-right">
+          <span class="status"><span class="dot"></span>Live &middot; Runs weekly</span>
+          <span class="cs-cue">Case study</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="tile t-ja" href="#jobagent" data-open="jobagent" data-reveal>
+      <div class="stage--diagram">
+        <div class="flow">
+          <div class="node"><span class="node-label">1 &middot; Sources</span><span class="node-text">Twenty careers pages, collected every morning</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="node"><span class="node-label">2 &middot; Pre-filter</span><span class="node-text">Title, level, and location</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="node node--dark"><span class="node-label">3 &middot; Score</span><span class="node-text">Claude as the scoring layer, against a written rubric</span></div>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="node"><span class="node-label">4 &middot; Dedupe</span><span class="node-text">Deduplication across sources</span></div>
+        </div>
+      </div>
+      <div class="tile-text">
+        <div class="tile-left">
+          <div class="tile-heading"><span class="tile-num">03</span><span class="tile-name">JobAgent</span></div>
+          <p class="tile-tagline">The same agent, built twice, to find out what the platform costs you.</p>
+        </div>
+        <div class="tile-right">
+          <span class="status"><span class="dot"></span>Live &middot; Runs daily</span>
+          <span class="cs-cue">Case study</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="tile t-ri" href="#rise" data-open="rise" data-reveal>
+      <div class="stage stage--small">
+        <img class="shot shot--small ar-rise s-left" src="rise-training.webp" alt="" loading="lazy" width="600" height="1194">
+        <img class="shot shot--small ar-rise s-mid" src="rise-dashboard.webp" alt="Rise screens" loading="lazy" width="600" height="1194">
+        <img class="shot shot--small ar-rise s-right" src="rise-ai-coach.webp" alt="" loading="lazy" width="600" height="1194">
+      </div>
+      <div class="tile-text">
+        <div class="tile-left">
+          <div class="tile-heading"><span class="tile-num">04</span><span class="tile-name">Rise</span></div>
+          <p class="tile-tagline">AI Health &amp; Fitness OS</p>
+        </div>
+        <div class="tile-right">
+          <span class="status"><span class="dot dot--muted"></span>Prototype</span>
+          <span class="cs-cue">Case study</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="tile t-bl" href="#brewlab" data-open="brewlab" data-reveal>
+      <div class="stage stage--small">
+        <img class="shot shot--small ar-brew s-left" src="brewlab-recipes.webp" alt="" loading="lazy" width="600" height="1132">
+        <img class="shot shot--small ar-brew s-mid" src="brewlab-landing.webp" alt="BrewLab screens" loading="lazy" width="600" height="1132">
+        <img class="shot shot--small ar-brew s-right" src="brewlab-timer.webp" alt="" loading="lazy" width="600" height="1132">
+      </div>
+      <div class="tile-text">
+        <div class="tile-left">
+          <div class="tile-heading"><span class="tile-num">05</span><span class="tile-name">BrewLab</span></div>
+          <p class="tile-tagline">AI Coffee Brewing Assistant</p>
+        </div>
+        <div class="tile-right">
+          <span class="status"><span class="dot dot--muted"></span>Prototype</span>
+          <span class="cs-cue">Case study</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<div class="drawer-overlay" data-overlay></div>
+
+<section class="drawer" data-drawer>
+  <div class="drawer-head">
+    <span>Case study</span>
+    <button class="drawer-close" type="button" data-close>Close <span aria-hidden="true">&times;</span></button>
+  </div>
+  <div class="drawer-body">
+
+    <article class="case-study" id="sundayatlas" data-reveal>
+      <div class="cs-head">
+        <p class="cs-meta"><span>01</span><span class="dot"></span><span>Live &middot; Flagship</span></p>
+        <h2 class="cs-title">SundayAtlas</h2>
+        <p class="cs-tagline">AI travel planning, powered by the creators you trust.</p>
+        <a class="link-u cs-live" href="https://sundayatlas.vercel.app/" target="_blank" rel="noopener" aria-label="Try SundayAtlas, open the live product">Try SundayAtlas <span aria-hidden="true">&#8599;</span></a>
+      </div>
+      <div class="strip">
+        <figure><img src="sundayatlas-home.webp" alt="SundayAtlas Home screen" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Home</figcaption></figure>
+        <figure><img src="sundayatlas-destinations.webp" alt="SundayAtlas Destinations screen" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Destinations</figcaption></figure>
+        <figure><img src="sundayatlas-itinerary.webp" alt="SundayAtlas Itinerary screen" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Itinerary</figcaption></figure>
+        <figure><img src="sundayatlas-map.webp" alt="SundayAtlas Map screen" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Map</figcaption></figure>
+        <figure><img src="sundayatlas-inspo.webp" alt="SundayAtlas Inspo screen" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Inspo</figcaption></figure>
+      </div>
+      <div>
+        <div class="story-row">
+          <p class="story-label">The Problem</p>
+          <p class="story-statement">Planning a trip means juggling 5 to 10 different platforms.</p>
+          <p class="story-detail">Itineraries in one tab. Hotels in another. Activities somewhere else. Bookings in a fourth. The experience is fragmented, repetitive, and exhausting.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Insight</p>
+          <p class="story-statement">The best travel recommendations don&#8217;t come from algorithms; they come from creators you already trust.</p>
+          <p class="story-detail">An AI concierge that takes the YouTube videos you&#8217;d watch anyway and turns them into draft itineraries, with every place verified, sourced, and one click away from being in your trip.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Product</p>
+          <p class="story-statement">SundayAtlas is a live travel product, not a closed prototype.</p>
+          <p class="story-detail">An AI concierge that builds day-by-day itineraries from a natural-language prompt. Every place is verified live against Google Places; every recommendation is traceable to a source. The differentiator: it extracts named spots from the YouTube creators you already follow, so a video you&#8217;d watch anyway becomes a draft itinerary in one click. Plus bookings, share links, an installable PWA, and an affiliate-tracking rail under the hood.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Takeaway</p>
+          <p class="story-statement">Trust is the product, not the itinerary.</p>
+          <p class="story-detail">Users don&#8217;t abandon trip planners because the suggestions are bad. They abandon them because they don&#8217;t trust a single tool to replace their own research. The real design challenge is earning that trust incrementally.</p>
+        </div>
+      </div>
+      <div class="features">
+        <div class="feature">
+          <h3>Planning</h3>
+          <ul>
+            <li>AI concierge builds day-by-day itineraries from a natural-language prompt.</li>
+            <li>Every place verified live against Google Places, with provenance badges (Eater, Michelin, ratings).</li>
+            <li>Trip essentials (visa, plugs, SIM, transit) and travel preferences carry across every trip.</li>
+          </ul>
+        </div>
+        <div class="feature">
+          <h3>Discovery: the differentiator</h3>
+          <ul>
+            <li>Trending YouTube content per destination, grouped into Eats / Sip / Do / Stay.</li>
+            <li>AI extracts named places from any video &#8594; one-click add to your trip with creator credit.</li>
+            <li>Paste your own YouTube link; SundayAtlas pulls its places.</li>
+          </ul>
+        </div>
+        <div class="feature">
+          <h3>Bookings &amp; polish</h3>
+          <ul>
+            <li>Bookings as first-class items: check-in/out, nights, confirmation, &ldquo;Booked&rdquo; badge.</li>
+            <li>Booking.com search (dates pre-filled) routed through a click-tracking + affiliate rail.</li>
+            <li>Read-only share links, installable PWA, consent banner, self-service data deletion.</li>
+          </ul>
+        </div>
+        <div class="feature">
+          <h3>Under the hood</h3>
+          <ul>
+            <li>Server-side agent loop, up to 5 iterations per turn, with web search as agentic tool use.</li>
+            <li>Production trade-offs made explicitly: prompt design, context management across sessions, model choice weighed against cost and latency.</li>
+            <li>Guardrails and explicit fallback states, added after a silent fallback shipped output that was plausible and wrong.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cs-next">
+        <a class="next-btn" href="#signal" data-next="signal"><span class="next-word">Next</span><span>02 Signal</span><span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </article>
+
+    <article class="case-study" id="signal" data-reveal>
+      <div class="cs-head">
+        <p class="cs-meta"><span>02</span><span class="dot"></span><span>Live &middot; Runs weekly</span></p>
+        <h2 class="cs-title">Signal</h2>
+        <p class="cs-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
+      </div>
+      <div class="panel panel--sg">
+        <div class="panel-head"><b>Eval loop</b><span>Node.js &middot; GitHub Actions &middot; Sheets &middot; Claude Haiku</span></div>
+        <div class="pflow">
+          <div class="pnode"><span class="node-label">1 &middot; Taxonomy</span><span class="node-text">Five closed labels, explicit precedence rules for ties</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">2 &middot; Rubric</span><span class="node-text">One document: human labeling guide and classifier prompt spec</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">3 &middot; Golden set</span><span class="node-text">Blind-labeled before seeing any prediction</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">4 &middot; Harness</span><span class="node-text">Deterministic Python scoring, no LLM judge</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">5 &middot; Score</span><span class="node-text">Per-bucket precision, recall, F1, confusion matrix</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode pnode--dark"><span class="node-label">6 &middot; Fix, re-score &#8634;</span><span class="node-text">Recent posts instead of all-time top: one bucket went from 63% of the sample to 33%</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="story-row">
+          <p class="story-label">The Problem</p>
+          <p class="story-statement">An agent that is confidently wrong is worse than no agent.</p>
+          <p class="story-detail">I built an agent to mine travel subreddits for product signal, and it looked like it worked. Every post came back neatly sorted into one of four buckets. But there was no bucket for posts carrying no signal at all, so the agent was forced to file noise as insight, and it did so with total confidence.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Insight</p>
+          <p class="story-statement">You cannot improve a classifier you have not measured.</p>
+          <p class="story-detail">Bucket counts tell you nothing about whether the buckets are right. The only way to know is to grade the agent against answers you labeled yourself, before you saw what it predicted.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Build</p>
+          <p class="story-statement">A closed loop: taxonomy, rubric, golden set, harness, fix, re-score.</p>
+          <p class="story-detail">A Node.js agent running on GitHub Actions, logging to Sheets, classifying posts with Claude Haiku. On top of it: a five-label closed taxonomy with explicit precedence rules for ties, a written rubric that doubles as both the human labeling guide and the classifier prompt spec, a blind-labeled golden set, and a deterministic Python scoring harness (no LLM judge) that outputs per-bucket precision, recall, F1, and a confusion matrix. Fixing data collection mattered as much as fixing the model: the agent had been pulling all-time-top posts instead of recent ones, and correcting that moved one bucket from 63 percent of the sample down to 33 percent.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Takeaway</p>
+          <p class="story-statement">Shipping an agent is the easy part. Knowing whether it is right is the job.</p>
+          <p class="story-detail">The failure was not the model, it was the taxonomy. No amount of prompt tuning fixes a scheme that has nowhere to put the truth. The eval did not just score the agent, it told me what to change.</p>
+        </div>
+      </div>
+      <div class="cs-next">
+        <a class="next-btn" href="#jobagent" data-next="jobagent"><span class="next-word">Next</span><span>03 JobAgent</span><span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </article>
+
+    <article class="case-study" id="jobagent" data-reveal>
+      <div class="cs-head">
+        <p class="cs-meta"><span>03</span><span class="dot"></span><span>Live &middot; Runs daily</span></p>
+        <h2 class="cs-title">JobAgent</h2>
+        <p class="cs-tagline">The same agent, built twice, to find out what the platform costs you.</p>
+      </div>
+      <div class="panel panel--ja">
+        <div class="panel-head"><b>Daily pipeline</b><span>Multi-stage orchestration &middot; 20+ APIs</span></div>
+        <div class="pflow">
+          <div class="pnode"><span class="node-label">1 &middot; Sources</span><span class="node-text">Twenty careers pages, collected every morning</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">2 &middot; Pre-filter</span><span class="node-text">Title, level, and location</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode pnode--dark"><span class="node-label">3 &middot; Score</span><span class="node-text">Claude as the scoring layer, against a written rubric</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">4 &middot; Dedupe</span><span class="node-text">Deduplication across sources</span></div>
+          <div class="pconn" aria-hidden="true"></div>
+          <div class="pnode"><span class="node-label">5 &middot; Digest</span><span class="node-text">Ranked daily digest</span></div>
+        </div>
+        <div class="builds">
+          <div class="build">
+            <b>Build 1 &middot; n8n</b>
+            <p>The first build.</p>
+          </div>
+          <div class="build">
+            <b>Build 2 &middot; Zapier, what the platform costs</b>
+            <ul>
+              <li>No parallel branching</li>
+              <li>No structured array passing between steps</li>
+              <li>Response-size cap on webhooks</li>
+              <li>One email per match instead of an aggregated digest</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="story-row">
+          <p class="story-label">The Problem</p>
+          <p class="story-statement">Twenty careers pages, checked by hand, every morning.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Insight</p>
+          <p class="story-statement">The interesting question was never whether to automate it. It was what each automation platform quietly takes away from you.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Build</p>
+          <p class="story-statement">Multi-stage orchestration across 20+ APIs.</p>
+          <p class="story-detail">Source collection, pre-filter on title, level, and location, then Claude as the scoring layer against a written rubric, deduplication, and a ranked daily digest. Built first on n8n, then rebuilt end to end on Zapier to document the trade-offs: no parallel branching, no structured array passing between steps, a response-size cap on webhooks, and one email per match instead of an aggregated digest.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Takeaway</p>
+          <p class="story-statement">The hard part was not the plumbing, it was encoding the rubric.</p>
+          <p class="story-detail">An agent that scores things is only as good as the definition of &ldquo;good&rdquo; you can actually write down.</p>
+        </div>
+      </div>
+      <div class="cs-next">
+        <a class="next-btn" href="#rise" data-next="rise"><span class="next-word">Next</span><span>04 Rise</span><span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </article>
+
+    <article class="case-study" id="rise" data-reveal>
+      <div class="cs-head">
+        <p class="cs-meta"><span>04</span><span class="dot dot--muted"></span><span>Prototype</span></p>
+        <h2 class="cs-title">Rise</h2>
+        <p class="cs-tagline">AI Health &amp; Fitness OS</p>
+        <a class="link-u cs-live" href="https://rise-health-os.lovable.app/" target="_blank" rel="noopener">View the prototype <span aria-hidden="true">&#8599;</span></a>
+      </div>
+      <div class="strip">
+        <figure><img src="rise-dashboard.webp" alt="Rise Dashboard screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Dashboard</figcaption></figure>
+        <figure><img src="rise-training.webp" alt="Rise Training screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Training</figcaption></figure>
+        <figure><img src="rise-ai-coach.webp" alt="Rise AI Coach screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>AI Coach</figcaption></figure>
+        <figure><img src="rise-wellbeing.webp" alt="Rise Wellbeing screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Wellbeing</figcaption></figure>
+        <figure><img src="rise-supplements.webp" alt="Rise Supplements screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Supplements</figcaption></figure>
+      </div>
+      <div>
+        <div class="story-row">
+          <p class="story-label">The Problem</p>
+          <p class="story-statement">Your health data is everywhere. And nowhere.</p>
+          <p class="story-detail">Sleep, nutrition, training load, stress: the signals that matter most are scattered across disconnected apps. Despite being deeply correlated, they never talk to each other.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Insight</p>
+          <p class="story-statement">One experience. Every signal. AI that understands the connections.</p>
+          <p class="story-detail">Unifying workout tracking, macro logging, wearable data, and meditation with an AI coach that understands how these systems interact could fundamentally change how people manage their health.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Prototype</p>
+          <p class="story-statement">A complete consumer health app, designed and prototyped end to end.</p>
+          <p class="story-detail">Built with React and TypeScript. Integrates workout tracking, nutrition logging, wearable health data via third-party APIs, guided meditation, and AI-powered coaching in a single unified experience.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Takeaway</p>
+          <p class="story-statement">The hardest design problem wasn&#8217;t adding features; it was deciding what not to surface.</p>
+          <p class="story-detail">When every health signal is available, the AI coach becomes the editorial layer. The biggest unlock was shifting from &ldquo;show all the data&rdquo; to &ldquo;show the one insight that matters today.&rdquo;</p>
+        </div>
+      </div>
+      <div class="cs-next">
+        <a class="next-btn" href="#brewlab" data-next="brewlab"><span class="next-word">Next</span><span>05 BrewLab</span><span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </article>
+
+    <article class="case-study" id="brewlab" data-reveal>
+      <div class="cs-head">
+        <p class="cs-meta"><span>05</span><span class="dot dot--muted"></span><span>Prototype</span></p>
+        <h2 class="cs-title">BrewLab</h2>
+        <p class="cs-tagline">AI Coffee Brewing Assistant</p>
+        <a class="link-u cs-live" href="https://alxnhfr-bit.github.io/brewlab/" target="_blank" rel="noopener">View the prototype <span aria-hidden="true">&#8599;</span></a>
+      </div>
+      <div class="strip">
+        <figure><img src="brewlab-landing.webp" alt="BrewLab Landing screen" loading="lazy" width="600" height="1132" style="aspect-ratio: 600 / 1132;"><figcaption>Landing</figcaption></figure>
+        <figure><img src="brewlab-recipes.webp" alt="BrewLab Recipes screen" loading="lazy" width="600" height="1132" style="aspect-ratio: 600 / 1132;"><figcaption>Recipes</figcaption></figure>
+        <figure><img src="brewlab-ratio.webp" alt="BrewLab Ratio screen" loading="lazy" width="600" height="1132" style="aspect-ratio: 600 / 1132;"><figcaption>Ratio</figcaption></figure>
+        <figure><img src="brewlab-timer.webp" alt="BrewLab Timer screen" loading="lazy" width="600" height="1132" style="aspect-ratio: 600 / 1132;"><figcaption>Timer</figcaption></figure>
+        <figure><img src="brewlab-shop.webp" alt="BrewLab Shop screen" loading="lazy" width="600" height="1132" style="aspect-ratio: 600 / 1132;"><figcaption>Shop</figcaption></figure>
+      </div>
+      <div>
+        <div class="story-row">
+          <p class="story-label">The Problem</p>
+          <p class="story-statement">Recipes are scattered. Adjusting them is a nightmare.</p>
+          <p class="story-detail">Coffee brewing knowledge lives across YouTube videos and blog posts with no standardization. When you want to scale a recipe or tweak a ratio for a different brew method, you are on your own with a calculator.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Insight</p>
+          <p class="story-statement">Precision brewing shouldn&#8217;t require expertise. Just good tools.</p>
+          <p class="story-detail">A structured recipe library with dynamic ratio calculation, guided brew timers, and method-specific recommendations could turn any home brewer into a consistent one.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Prototype</p>
+          <p class="story-statement">Guided recipes, precision ratios, and a step-by-step brew timer, in one app.</p>
+          <p class="story-detail">Built with Claude; landing animation crafted with Kling AI. Covers V60, AeroPress, and Cold Brew with curated recipes from competition winners and specialty coffee experts. Includes a ratio calculator, guided timer, and a curated bean shop.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Takeaway</p>
+          <p class="story-statement">The best recipe tool isn&#8217;t the one with the most recipes; it&#8217;s the one you actually follow.</p>
+          <p class="story-detail">Structured step-by-step guidance with a built-in timer changes behavior in a way that a static recipe page never does. The product isn&#8217;t the information; it&#8217;s the workflow.</p>
+        </div>
+      </div>
+      <div class="cs-next">
+        <a class="next-btn" href="#sundayatlas" data-next="sundayatlas"><span class="next-word">Next</span><span>01 SundayAtlas</span><span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </article>
+
   </div>
 </section>
+</main>
 
-<section class="section-dark" id="sundayatlas">
-  <div class="section-inner section-pad" style="padding-bottom: 0;">
-    <div class="project-header">
-      <p class="project-label">01 <span class="status-chip">Live &middot; Flagship</span></p>
-      <h2 class="project-title">SundayAtlas</h2>
-      <p class="project-tagline">AI travel planning, powered by the creators you trust.</p>
-    </div>
+<footer class="container footer">
+  <span>Alexander Neuhofer &middot; 2026</span>
+  <div class="footer-links">
+    <a href="https://github.com/alxnhfr-bit" target="_blank" rel="noopener">GitHub &#8599;</a>
+    <a href="https://www.linkedin.com/in/alexneuhofer" target="_blank" rel="noopener">LinkedIn &#8599;</a>
   </div>
-  <div class="phone-gallery-wrapper">
-    <div class="phone-gallery">
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-home.webp" alt="SundayAtlas Home screen" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Home</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-destinations.webp" alt="SundayAtlas Destinations screen" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Destinations</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-itinerary.webp" alt="SundayAtlas Itinerary screen" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Itinerary</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-map.webp" alt="SundayAtlas Map screen" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Map</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="sundayatlas-inspo.webp" alt="SundayAtlas Inspo screen" width="600" height="1304" loading="lazy"></div></div>
-        <p class="phone-label">Inspo</p>
-      </div>
-    </div>
-  </div>
-  <div class="feature-grid-wrap">
-    <div class="feature-grid">
-      <div class="feature-card">
-        <h3>Planning</h3>
-        <ul>
-          <li>AI concierge builds day-by-day itineraries from a natural-language prompt.</li>
-          <li>Every place verified live against Google Places, with provenance badges (Eater, Michelin, ratings).</li>
-          <li>Trip essentials (visa, plugs, SIM, transit) and travel preferences carry across every trip.</li>
-        </ul>
-      </div>
-      <div class="feature-card">
-        <h3>Discovery: the differentiator</h3>
-        <ul>
-          <li>Trending YouTube content per destination, grouped into Eats / Sip / Do / Stay.</li>
-          <li>AI extracts named places from any video &#8594; one-click add to your trip with creator credit.</li>
-          <li>Paste your own YouTube link; SundayAtlas pulls its places.</li>
-        </ul>
-      </div>
-      <div class="feature-card">
-        <h3>Bookings &amp; polish</h3>
-        <ul>
-          <li>Bookings as first-class items: check-in/out, nights, confirmation, &ldquo;Booked&rdquo; badge.</li>
-          <li>Booking.com search (dates pre-filled) routed through a click-tracking + affiliate rail.</li>
-          <li>Read-only share links, installable PWA, consent banner, self-service data deletion.</li>
-        </ul>
-      </div>
-      <div class="feature-card">
-        <h3>Under the hood</h3>
-        <ul>
-          <li>Server-side agent loop, up to 5 iterations per turn, with web search as agentic tool use.</li>
-          <li>Production trade-offs made explicitly: prompt design, context management across sessions, model choice weighed against cost and latency.</li>
-          <li>Guardrails and explicit fallback states, added after a silent fallback shipped output that was plausible and wrong.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="section-inner section-pad" style="padding-top: 0;">
-    <div class="story">
-      <div class="story-step">
-        <p class="step-label">The Problem</p>
-        <p class="step-text">Planning a trip means juggling 5 to 10 different platforms.</p>
-        <p class="step-detail">Itineraries in one tab. Hotels in another. Activities somewhere else. Bookings in a fourth. The experience is fragmented, repetitive, and exhausting.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Insight</p>
-        <p class="step-text">The best travel recommendations don&#8217;t come from algorithms; they come from creators you already trust.</p>
-        <p class="step-detail">An AI concierge that takes the YouTube videos you&#8217;d watch anyway and turns them into draft itineraries, with every place verified, sourced, and one click away from being in your trip.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Product</p>
-        <p class="step-text">SundayAtlas is a live travel product, not a closed prototype.</p>
-        <p class="step-detail">An AI concierge that builds day-by-day itineraries from a natural-language prompt. Every place is verified live against Google Places; every recommendation is traceable to a source. The differentiator: it extracts named spots from the YouTube creators you already follow, so a video you&#8217;d watch anyway becomes a draft itinerary in one click. Plus bookings, share links, an installable PWA, and an affiliate-tracking rail under the hood.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Takeaway</p>
-        <p class="step-text">Trust is the product, not the itinerary.</p>
-        <p class="step-detail">Users don&#8217;t abandon trip planners because the suggestions are bad. They abandon them because they don&#8217;t trust a single tool to replace their own research. The real design challenge is earning that trust incrementally.</p>
-      </div>
-    </div>
-    <div class="proto-link">
-      <a href="https://sundayatlas.vercel.app/" target="_blank" rel="noopener" aria-label="Try SundayAtlas, open the live product">Try SundayAtlas <span>&#8250;</span></a>
-    </div>
-  </div>
-</section>
-
-<section class="section-light" id="signal">
-  <div class="section-inner section-pad">
-    <div class="project-header">
-      <p class="project-label">02 <span class="status-chip">Live &middot; Runs weekly</span></p>
-      <h2 class="project-title">Signal</h2>
-      <p class="project-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
-    </div>
-    <div class="story">
-      <div class="story-step">
-        <p class="step-label">The Problem</p>
-        <p class="step-text">An agent that is confidently wrong is worse than no agent.</p>
-        <p class="step-detail">I built an agent to mine travel subreddits for product signal, and it looked like it worked. Every post came back neatly sorted into one of four buckets. But there was no bucket for posts carrying no signal at all, so the agent was forced to file noise as insight, and it did so with total confidence.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Insight</p>
-        <p class="step-text">You cannot improve a classifier you have not measured.</p>
-        <p class="step-detail">Bucket counts tell you nothing about whether the buckets are right. The only way to know is to grade the agent against answers you labeled yourself, before you saw what it predicted.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Build</p>
-        <p class="step-text">A closed loop: taxonomy, rubric, golden set, harness, fix, re-score.</p>
-        <p class="step-detail">A Node.js agent running on GitHub Actions, logging to Sheets, classifying posts with Claude Haiku. On top of it: a five-label closed taxonomy with explicit precedence rules for ties, a written rubric that doubles as both the human labeling guide and the classifier prompt spec, a blind-labeled golden set, and a deterministic Python scoring harness (no LLM judge) that outputs per-bucket precision, recall, F1, and a confusion matrix. Fixing data collection mattered as much as fixing the model: the agent had been pulling all-time-top posts instead of recent ones, and correcting that moved one bucket from 63 percent of the sample down to 33 percent.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Takeaway</p>
-        <p class="step-text">Shipping an agent is the easy part. Knowing whether it is right is the job.</p>
-        <p class="step-detail">The failure was not the model, it was the taxonomy. No amount of prompt tuning fixes a scheme that has nowhere to put the truth. The eval did not just score the agent, it told me what to change.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-dark" id="jobagent">
-  <div class="section-inner section-pad">
-    <div class="project-header">
-      <p class="project-label">03 <span class="status-chip">Live &middot; Runs daily</span></p>
-      <h2 class="project-title">JobAgent</h2>
-      <p class="project-tagline">The same agent, built twice, to find out what the platform costs you.</p>
-    </div>
-    <div class="story">
-      <div class="story-step">
-        <p class="step-label">The Problem</p>
-        <p class="step-text">Twenty careers pages, checked by hand, every morning.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Insight</p>
-        <p class="step-text">The interesting question was never whether to automate it. It was what each automation platform quietly takes away from you.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Build</p>
-        <p class="step-text">Multi-stage orchestration across 20+ APIs.</p>
-        <p class="step-detail">Source collection, pre-filter on title, level, and location, then Claude as the scoring layer against a written rubric, deduplication, and a ranked daily digest. Built first on n8n, then rebuilt end to end on Zapier to document the trade-offs: no parallel branching, no structured array passing between steps, a response-size cap on webhooks, and one email per match instead of an aggregated digest.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Takeaway</p>
-        <p class="step-text">The hard part was not the plumbing, it was encoding the rubric.</p>
-        <p class="step-detail">An agent that scores things is only as good as the definition of &ldquo;good&rdquo; you can actually write down.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-light" id="rise">
-  <div class="section-inner section-pad" style="padding-bottom: 0;">
-    <div class="project-header">
-      <p class="project-label">04 <span class="status-chip muted">Prototype</span></p>
-      <h2 class="project-title">Rise</h2>
-      <p class="project-tagline">AI Health &amp; Fitness OS</p>
-    </div>
-  </div>
-  <div class="phone-gallery-wrapper">
-    <div class="phone-gallery">
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="rise-dashboard.webp" alt="Rise Dashboard screen" width="600" height="1194" loading="lazy"></div></div>
-        <p class="phone-label">Dashboard</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="rise-training.webp" alt="Rise Training screen" width="600" height="1192" loading="lazy"></div></div>
-        <p class="phone-label">Training</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="rise-ai-coach.webp" alt="Rise AI Coach screen" width="600" height="1188" loading="lazy"></div></div>
-        <p class="phone-label">AI Coach</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="rise-wellbeing.webp" alt="Rise Wellbeing screen" width="600" height="1197" loading="lazy"></div></div>
-        <p class="phone-label">Wellbeing</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="rise-supplements.webp" alt="Rise Supplements screen" width="600" height="1200" loading="lazy"></div></div>
-        <p class="phone-label">Supplements</p>
-      </div>
-    </div>
-  </div>
-  <div class="section-inner section-pad" style="padding-top: 0;">
-    <div class="story">
-      <div class="story-step">
-        <p class="step-label">The Problem</p>
-        <p class="step-text">Your health data is everywhere. And nowhere.</p>
-        <p class="step-detail">Sleep, nutrition, training load, stress: the signals that matter most are scattered across disconnected apps. Despite being deeply correlated, they never talk to each other.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Insight</p>
-        <p class="step-text">One experience. Every signal. AI that understands the connections.</p>
-        <p class="step-detail">Unifying workout tracking, macro logging, wearable data, and meditation with an AI coach that understands how these systems interact could fundamentally change how people manage their health.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Prototype</p>
-        <p class="step-text">A complete consumer health app, designed and prototyped end to end.</p>
-        <p class="step-detail">Built with React and TypeScript. Integrates workout tracking, nutrition logging, wearable health data via third-party APIs, guided meditation, and AI-powered coaching in a single unified experience.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Takeaway</p>
-        <p class="step-text">The hardest design problem wasn&#8217;t adding features; it was deciding what not to surface.</p>
-        <p class="step-detail">When every health signal is available, the AI coach becomes the editorial layer. The biggest unlock was shifting from &ldquo;show all the data&rdquo; to &ldquo;show the one insight that matters today.&rdquo;</p>
-      </div>
-    </div>
-    <div class="proto-link">
-      <a href="https://rise-health-os.lovable.app/" target="_blank" rel="noopener">View the prototype <span>&#8250;</span></a>
-    </div>
-  </div>
-</section>
-
-<section class="section-dark" id="brewlab">
-  <div class="section-inner section-pad" style="padding-bottom: 0;">
-    <div class="project-header">
-      <p class="project-label">05 <span class="status-chip muted">Prototype</span></p>
-      <h2 class="project-title">BrewLab</h2>
-      <p class="project-tagline">AI Coffee Brewing Assistant</p>
-    </div>
-  </div>
-  <div class="phone-gallery-wrapper">
-    <div class="phone-gallery">
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="brewlab-landing.webp" alt="BrewLab Landing screen" width="600" height="1132" loading="lazy"></div></div>
-        <p class="phone-label">Landing</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="brewlab-recipes.webp" alt="BrewLab Recipes screen" width="600" height="1137" loading="lazy"></div></div>
-        <p class="phone-label">Recipes</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="brewlab-ratio.webp" alt="BrewLab Ratio screen" width="600" height="1128" loading="lazy"></div></div>
-        <p class="phone-label">Ratio</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="brewlab-timer.webp" alt="BrewLab Timer screen" width="600" height="1132" loading="lazy"></div></div>
-        <p class="phone-label">Timer</p>
-      </div>
-      <div class="iphone-wrap">
-        <div class="iphone"><div class="iphone-screen"><img src="brewlab-shop.webp" alt="BrewLab Shop screen" width="600" height="1130" loading="lazy"></div></div>
-        <p class="phone-label">Shop</p>
-      </div>
-    </div>
-  </div>
-  <div class="section-inner section-pad" style="padding-top: 0;">
-    <div class="story">
-      <div class="story-step">
-        <p class="step-label">The Problem</p>
-        <p class="step-text">Recipes are scattered. Adjusting them is a nightmare.</p>
-        <p class="step-detail">Coffee brewing knowledge lives across YouTube videos and blog posts with no standardization. When you want to scale a recipe or tweak a ratio for a different brew method, you are on your own with a calculator.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Insight</p>
-        <p class="step-text">Precision brewing shouldn&#8217;t require expertise. Just good tools.</p>
-        <p class="step-detail">A structured recipe library with dynamic ratio calculation, guided brew timers, and method-specific recommendations could turn any home brewer into a consistent one.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Prototype</p>
-        <p class="step-text">Guided recipes, precision ratios, and a step-by-step brew timer, in one app.</p>
-        <p class="step-detail">Built with Claude; landing animation crafted with Kling AI. Covers V60, AeroPress, and Cold Brew with curated recipes from competition winners and specialty coffee experts. Includes a ratio calculator, guided timer, and a curated bean shop.</p>
-      </div>
-      <div class="story-step">
-        <p class="step-label">The Takeaway</p>
-        <p class="step-text">The best recipe tool isn&#8217;t the one with the most recipes; it&#8217;s the one you actually follow.</p>
-        <p class="step-detail">Structured step-by-step guidance with a built-in timer changes behavior in a way that a static recipe page never does. The product isn&#8217;t the information; it&#8217;s the workflow.</p>
-      </div>
-    </div>
-    <div class="proto-link">
-      <a href="https://alxnhfr-bit.github.io/brewlab/" target="_blank" rel="noopener">View the prototype <span>&#8250;</span></a>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <p><a href="mailto:alxnhfr@gmail.com">alxnhfr&#64;gmail.com</a> &middot; <a href="https://www.linkedin.com/in/alexneuhofer" target="_blank" rel="noopener">LinkedIn</a></p>
-  <p style="margin-top: 8px;">Alexander Neuhofer &middot; 2026</p>
 </footer>
 
 <script>
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
-  document.querySelectorAll('.story-step, .iphone-wrap').forEach(el => observer.observe(el));
+(function () {
+  'use strict';
 
-  const navbar = document.getElementById('navbar');
-  const darkSections = document.querySelectorAll('.section-dark');
-  window.addEventListener('scroll', () => {
-    let inDark = false;
-    darkSections.forEach(section => {
-      const rect = section.getBoundingClientRect();
-      if (rect.top <= 48 && rect.bottom > 48) inDark = true;
-    });
-    navbar.classList.toggle('dark', inDark);
-  }, { passive: true });
+  var IDS = ['sundayatlas', 'signal', 'jobagent', 'rise', 'brewlab'];
+  var panel = document.querySelector('[data-drawer]');
+  var overlay = document.querySelector('[data-overlay]');
+  var closeBtn = panel ? panel.querySelector('[data-close]') : null;
+  if (!panel || !overlay) return;
 
-  const scrollHint = document.querySelector('.scroll-hint');
-  let hintHidden = false;
-  window.addEventListener('scroll', () => {
-    if (!hintHidden && window.scrollY > 100) {
-      scrollHint.classList.add('hidden');
-      hintHidden = true;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var articles = {};
+  IDS.forEach(function (id) { articles[id] = document.getElementById(id); });
+
+  /* Regions hidden from assistive tech and taken out of the tab order
+     while the drawer is open. */
+  var background = ['.topbar', '.hero', '.work', '.footer'].map(function (sel) {
+    return document.querySelector(sel);
+  }).filter(Boolean);
+
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-label', 'Case study');
+  panel.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('aria-hidden', 'true');
+
+  /* ---------- Drawer ----------
+     Wired before the reveal animations below, so a failure in the
+     decorative layer can never take the primary content path with it. */
+  var activeId = null;   /* which case study is mounted */
+  var isOpen = false;    /* drives the focus guard, flipped synchronously */
+  var closeTimer = null;
+  var lastTrigger = null;
+
+  function setBackgroundInert(on) {
+    background.forEach(function (el) {
+      if (on) { el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true'); }
+      else { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
+    });
+  }
+
+  function setHash(id) {
+    try {
+      if (id) history.replaceState(null, '', '#' + id);
+      else history.replaceState(null, '', location.pathname + location.search);
+    } catch (e) {}
+  }
+
+  function focusClose() {
+    if (!closeBtn) return;
+    try { closeBtn.focus({ preventScroll: true }); } catch (e) { closeBtn.focus(); }
+  }
+
+  function setActive(id) {
+    IDS.forEach(function (key) {
+      if (articles[key]) articles[key].classList.toggle('is-active', key === id);
+    });
+    activeId = id;
+    prime(articles[id], true);
+  }
+
+  function open(id, trigger) {
+    if (!articles[id]) return;
+    clearTimeout(closeTimer);
+    if (trigger) lastTrigger = trigger;
+    var alreadyOpen = isOpen;
+    isOpen = true;
+    setActive(id);
+    panel.setAttribute('aria-hidden', 'false');
+    setBackgroundInert(true);
+    document.body.style.overflow = 'hidden';
+    panel.scrollTop = 0;
+    setHash(id);
+    if (alreadyOpen) { focusClose(); return; }
+    /* Commit the closed transform with a forced reflow so the transition
+       runs. requestAnimationFrame would stall in a hidden or throttled
+       tab and leave the drawer stuck closed. */
+    void panel.offsetWidth;
+    panel.classList.add('is-open');
+    overlay.classList.add('is-open');
+    panel.scrollTop = 0;
+    /* Focus only lands once the panel is no longer visibility:hidden. */
+    focusClose();
+  }
+
+  function switchTo(id) {
+    if (!articles[id]) return;
+    setActive(id);
+    panel.scrollTop = 0;
+    setHash(id);
+    /* The Next link lives in the article we just unmounted, so focus
+       would otherwise fall back to <body>, outside the open dialog. */
+    focusClose();
+  }
+
+  function close() {
+    if (!isOpen) return;
+    clearTimeout(closeTimer);
+    /* Disarm the focus guard before restoring focus, or the focusin
+       handler bounces it straight back into the closing panel. */
+    isOpen = false;
+    panel.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    setBackgroundInert(false);
+    document.body.style.overflow = '';
+    setHash(null);
+    closeTimer = setTimeout(function () {
+      IDS.forEach(function (key) {
+        if (articles[key]) articles[key].classList.remove('is-active');
+      });
+      activeId = null;
+    }, 500);
+    if (lastTrigger && document.contains(lastTrigger)) {
+      try { lastTrigger.focus({ preventScroll: true }); } catch (e) { lastTrigger.focus(); }
     }
-  }, { passive: true });
+    lastTrigger = null;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open]'), function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      open(link.getAttribute('data-open'), link);
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-next]'), function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      switchTo(link.getAttribute('data-next'));
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', close);
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') && isOpen) close();
+  });
+
+  /* Backstop for the inert containment above */
+  document.addEventListener('focusin', function (e) {
+    if (!isOpen) return;
+    if (panel.contains(e.target)) return;
+    focusClose();
+  });
+
+  /* Deep link on load, plus later hash edits and external links landing
+     on an already-open page. */
+  function openFromHash(initial) {
+    var id = (location.hash || '').slice(1);
+    if (IDS.indexOf(id) !== -1) {
+      if (id !== activeId || !isOpen) open(id, null);
+      return true;
+    }
+    if (!initial && isOpen) close();
+    return false;
+  }
+  window.addEventListener('hashchange', function () { openFromHash(false); });
+
+  if (openFromHash(true)) {
+    /* The browser resolves the fragment to the article inside the panel
+       and scrolls it, which can land after our own reset. */
+    var settle = function () {
+      if (!isOpen) return;
+      panel.scrollTop = 0;
+      focusClose();
+    };
+    setTimeout(settle, 0);
+    setTimeout(settle, 150);
+    window.addEventListener('load', settle);
+  }
+
+  /* ---------- Reveals (decorative, must never hide content) ---------- */
+  var io = null;
+  function observer() {
+    if (io || !('IntersectionObserver' in window)) return io;
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { entry.target.classList.add('is-in'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    return io;
+  }
+
+  function prime(el, animateNow) {
+    if (!el || reduce) return;
+    try {
+      el.classList.remove('reveal', 'is-in');
+      /* force a reflow so a re-primed element animates again */
+      void el.offsetWidth;
+      el.classList.add('reveal');
+      if (animateNow) {
+        void el.offsetWidth;
+        el.classList.add('is-in');
+        return;
+      }
+      var obs = observer();
+      if (!obs) { el.classList.add('is-in'); return; }
+      obs.observe(el);
+    } catch (err) {
+      el.classList.remove('reveal');
+    }
+  }
+
+  try {
+    /* Tiles already in view on load are left alone (no animation) */
+    if (!reduce) {
+      Array.prototype.forEach.call(document.querySelectorAll('.tile[data-reveal]'), function (el) {
+        if (el.getBoundingClientRect().top < window.innerHeight) return;
+        prime(el, false);
+      });
+    }
+
+    /* A hidden tab never runs the rendering step, so the observer cannot
+       deliver and primed tiles would sit at opacity 0. Sweep whatever is
+       genuinely on screen once the page becomes visible. */
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      Array.prototype.forEach.call(document.querySelectorAll('.reveal:not(.is-in)'), function (el) {
+        var box = el.getBoundingClientRect();
+        if (box.top < window.innerHeight && box.bottom > 0) el.classList.add('is-in');
+      });
+    });
+  } catch (err) {
+    Array.prototype.forEach.call(document.querySelectorAll('.reveal'), function (el) {
+      el.classList.remove('reveal');
+    });
+  }
+})();
 </script>
 
 </body>
