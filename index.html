@@ -238,6 +238,25 @@
     border-radius: 16px; border: 1px solid var(--hair); background: var(--img-ph);
   }
   .cs-flow figcaption { font-size: 12px; color: var(--text-3); }
+  .cs-flow-fallback { display: flex; flex-direction: column; gap: 8px; }
+  .cs-flow-fallback img {
+    display: block; width: 100%; height: auto; aspect-ratio: 16 / 9;
+    border-radius: 16px; border: 1px solid var(--hair);
+  }
+  .cs-flow-text > summary {
+    font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer;
+    list-style: none; display: inline-flex; align-items: center; gap: 6px;
+    text-decoration: underline; text-underline-offset: 4px;
+    text-decoration-color: rgba(23,23,26,0.3);
+  }
+  .cs-flow-text > summary::-webkit-details-marker { display: none; }
+  .cs-flow-text > summary::after { content: '+'; color: var(--text-3); }
+  .cs-flow-text[open] > summary::after { content: '\2212'; }
+  .cs-flow-text ol {
+    margin: 12px 0 0; padding-left: 20px;
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 14px; line-height: 1.55; color: var(--text-2);
+  }
 
   .strip {
     display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none;
@@ -311,7 +330,12 @@
     .tile:hover { transform: none; }
   }
 </style>
-<noscript><style>.reveal { opacity: 1; translate: none; }</style></noscript>
+<noscript><style>
+  .reveal { opacity: 1; translate: none; }
+  /* Nothing hydrates the player without JS, so hide the dead control bar
+     and let the poster link in the figure carry the slot. */
+  .cs-flow video { display: none; }
+</style></noscript>
 </head>
 <body>
 
@@ -472,10 +496,31 @@
         <video controls playsinline muted preload="none" width="1280" height="720"
                poster="sundayatlas-flow-poster.webp"
                data-src="sundayatlas-flow.mp4"
+               aria-describedby="sundayatlas-flow-text"
                aria-label="Click-through of a trip being planned in SundayAtlas"></video>
+        <noscript>
+          <a class="cs-flow-fallback" href="sundayatlas-flow.mp4">
+            <img src="sundayatlas-flow-poster.webp" width="1280" height="720" alt="Opening frame of the SundayAtlas click-through: a phone showing the trip composer, captioned A trip, planned in one conversation.">
+            <span class="link-u">Watch the click-through <span aria-hidden="true">&#8599;</span></span>
+          </a>
+        </noscript>
         <figcaption>A week in Bangkok, planned on a phone</figcaption>
-        <noscript><a class="link-u" href="sundayatlas-flow.mp4">Watch the click-through <span aria-hidden="true">&#8599;</span></a></noscript>
       </figure>
+      <details class="cs-flow-text" id="sundayatlas-flow-text">
+        <summary>What the video shows</summary>
+        <ol>
+          <li>A trip, planned in one conversation.</li>
+          <li>Describe the trip in your own words.</li>
+          <li>Pick dates, or leave them loose.</li>
+          <li>Tap a few moods. It reads between the lines.</li>
+          <li>The concierge drafts every day and checks every address.</li>
+          <li>Your week, as a guide-book chapter.</li>
+          <li>Days are pages. Tap to turn.</li>
+          <li>Notes stick to stops.</li>
+          <li>Navigation hands off to Google Maps.</li>
+          <li>And it&#8217;s on your shelf, ready for September.</li>
+        </ol>
+      </details>
       <div class="strip">
         <figure><img src="sundayatlas-landing.webp" alt="SundayAtlas landing screen with the trip composer" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Landing</figcaption></figure>
         <figure><img src="sundayatlas-trips.webp" alt="SundayAtlas collection of saved trips" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Your trips</figcaption></figure>
@@ -807,10 +852,15 @@
     var v = root.querySelector('video[data-src]');
     if (v && !v.getAttribute('src')) v.setAttribute('src', v.getAttribute('data-src'));
   }
-  function stopVideo(root) {
+  function stopVideo(root, rewind) {
     if (!root) return;
     var v = root.querySelector('video');
-    if (v && !v.paused) v.pause();
+    if (!v) return;
+    if (!v.paused) v.pause();
+    /* On a full close, rewind so reopening starts from the beginning
+       rather than a frozen mid-demo frame. Switching between case
+       studies keeps its position. */
+    if (rewind) { try { v.currentTime = 0; } catch (e) {} }
   }
 
   function setActive(id) {
@@ -866,7 +916,7 @@
     /* Disarm the focus guard before restoring focus, or the focusin
        handler bounces it straight back into the closing panel. */
     isOpen = false;
-    if (activeId) stopVideo(articles[activeId]);
+    if (activeId) stopVideo(articles[activeId], true);
     panel.classList.remove('is-open');
     overlay.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
