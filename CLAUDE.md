@@ -4,7 +4,7 @@
 - **Repo**: `github.com/alxnhfr-bit/portfolio`
 - **Live URL**: `https://alxnhfr-bit.github.io/portfolio/`
 - **Hosting**: GitHub Pages (main branch, single `index.html`)
-- **File**: Self-contained `index.html` (~50 KB) plus 16 `.webp` images in the repo root
+- **File**: Self-contained `index.html` (~57 KB) plus 17 `.webp` images and one `.mp4` in the repo root
 
 ## Owner
 Alexander Neuhofer - Senior PM at Zalando, Berlin. Building AI product prototypes independently. Portfolio targets consumer PM roles in APAC.
@@ -16,7 +16,7 @@ Single `index.html`. No build step, no dependencies, no framework. Plain HTML/CS
 `avatar.webp` (256x256) and 15 screenshots, all 600px wide:
 - `sundayatlas-{home,destinations,itinerary,map,inspo}.webp` (600x1304)
 - `rise-{dashboard,training,ai-coach,wellbeing,supplements}.webp` (~600x1194)
-- `brewlab-{landing,recipes,ratio,timer,shop}.webp` (~600x1132)
+- `15grms-{brew,recipe,brewing,complete,journal}.webp` (600x1224)
 
 To convert or resize images use Python Pillow via **`/usr/bin/python3`**, which already has it; the Homebrew `python3` first on PATH does not, and refuses `pip install` under PEP 668. Note `sips` can read WebP but cannot write it.
 
@@ -53,7 +53,7 @@ Quiet, light editorial gallery. Large serif headline, five tinted project tiles 
 --img-ph:     #f0f0ee   image placeholder background
 ```
 Tile tints are `oklch()` with a hex fallback declared first:
-SundayAtlas `#f6efe1` / `oklch(0.955 0.025 75)`; Signal `#eceff7` / `oklch(0.955 0.018 250)`; JobAgent `#f4edf5` / `oklch(0.955 0.02 320)`; Rise `#e6f4ec` / `oklch(0.955 0.025 160)`; BrewLab `#f7ece3` / `oklch(0.95 0.025 50)`. Drawer diagram panels: Signal `oklch(0.965 0.012 250)`, JobAgent `oklch(0.965 0.012 320)`.
+SundayAtlas `#f6efe1` / `oklch(0.955 0.025 75)`; Signal `#eceff7` / `oklch(0.955 0.018 250)`; JobAgent `#f4edf5` / `oklch(0.955 0.02 320)`; Rise `#e6f4ec` / `oklch(0.955 0.025 160)`; 15GRMS `#f7ece3` / `oklch(0.95 0.025 50)` (class `.t-15g`). Drawer diagram panels: Signal `oklch(0.965 0.012 250)`, JobAgent `oklch(0.965 0.012 320)`.
 
 Links are ink with `text-underline-offset: 5px` and `text-decoration-color: rgba(23,23,26,0.25)`, going to full ink on hover. Overlay is `rgba(23,23,26,0.28)` + `backdrop-filter: blur(3px)`.
 
@@ -73,7 +73,7 @@ Links are ink with `text-underline-offset: 5px` and `text-decoration-color: rgba
 ### Tile screen compositions
 Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately cropped by its bottom edge. They overlap via negative margins and stack with z-index:
 - SundayAtlas (flagship, stage `clamp(280px, 30vw, 420px)`): inspo (mt 64, mr -24, z1), destinations (mt 32, mr -24, z2), home (z3), itinerary (mt 32, ml -24, z2), map (mt 64, ml -24, z1). Screens `clamp(120px, 13vw, 176px)`
-- Rise and BrewLab (stage `clamp(240px, 26vw, 340px)`): left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). Screens `clamp(120px, 12vw, 160px)`
+- Rise and 15GRMS (stage `clamp(240px, 26vw, 340px)`): left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). Screens `clamp(120px, 12vw, 160px)`
 - Signal and JobAgent have no screenshots. They show a column of white diagram cards joined by 1px connectors, faded out with `mask-image: linear-gradient(to bottom, #000 70%, transparent 100%)`
 
 **Images must keep `height: auto` in CSS.** They carry `width`/`height` attributes for CLS, and without `height: auto` that HTML `height` attribute (a presentational hint) beats `aspect-ratio` and the phones render full-height and hugely zoomed.
@@ -110,16 +110,16 @@ main
         02 Signal       Live . Runs weekly (eval-loop diagram)
         03 JobAgent     Live . Runs daily  (daily-pipeline diagram, dark "3 . Score" card)
         04 Rise         Prototype          (3 screens)
-        05 BrewLab      Prototype          (3 screens)
+        05 15GRMS       Prototype          (3 screens in the tile, all 5 in the drawer)
 
   div.drawer-overlay
 
   section.drawer  (the case studies)
     - sticky header "Case study" + Close pill
-    - five <article class="case-study" id="sundayatlas|signal|jobagent|rise|brewlab">
+    - five <article class="case-study" id="sundayatlas|signal|jobagent|rise|15grms">
         meta row, serif h2, tagline, optional live link
         SundayAtlas only: the flow video (figure.cs-flow) above the strip
-        screens strip (SundayAtlas, Rise, BrewLab) or diagram panel (Signal, JobAgent)
+        screens strip (SundayAtlas, Rise, 15GRMS) or diagram panel (Signal, JobAgent)
         four story rows: Problem / Insight / Product|Build|Prototype / Takeaway
         SundayAtlas only: four feature lists in a 2-col grid
         "Next NN Name" pill linking to the next project (wraps 05 to 01)
@@ -151,9 +151,14 @@ Timing and focus details that are easy to regress:
 - On a deep link the browser scrolls the panel to the target article, so `panel.scrollTop` is reset again on `load` and via short timeouts.
 - The drawer wiring is attached **before** the reveal setup, and the reveal work is wrapped in `try`/`catch` that strips `.reveal` on failure. `html.js .case-study { display: none }` is applied by the head script unconditionally, so a throw in the decorative layer must never be able to leave the case studies unreachable.
 
+### Naming and the 15grms id
+Project 05 was renamed from BrewLab to **15GRMS**. The anchor id, the `data-open`/`data-next` values, the entry in the JS `IDS` array and the image filenames all use lowercase `15grms`; the visible name is uppercase `15GRMS`. The tile tint class is `.t-15g`.
+
+**That id starts with a digit, so `document.querySelector('#15grms')` throws** ("not a valid selector") because a CSS identifier cannot begin with a digit unescaped. The site is safe because its JS resolves case studies with `document.getElementById(id)` and only ever builds the hash as a string. If you ever need a selector, scope it off the element (`document.getElementById('15grms').querySelector(...)`) or escape it as `#\\31 5grms`. The same applies to any CSS rule or `:target` selector.
+
 ## Content Rules
 - **No em dashes or en dashes** in any content, in any encoding (literal, `&#8212;`, `&mdash;`, `&#8211;`, `&ndash;`). Use commas, semicolons, colons or periods.
-- **No mention of "Lovable" by name** in SundayAtlas content. Rise and BrewLab may mention it.
+- **No mention of "Lovable" by name** in SundayAtlas content. Rise and 15GRMS may mention it.
 - If an email is ever shown, encode the `@` as `&#64;` so Cloudflare's email protection cannot mangle it on GitHub Pages. The current design shows no email.
 - Case-study copy is fixed. Do not rewrite, shorten or reorder it without being asked.
 
@@ -173,7 +178,7 @@ These all follow from the reference's own `vw`-based `clamp()` values. Changing 
 ## Responsive Behaviour
 Everything is fluid via `clamp()` and the auto-fit grid; there are no hand-written width breakpoints.
 - **<= ~1089px**: tiles stack to one column
-- **> ~1089px**: two columns. The widened `--pad-x` leaves a 1400px content box at the 1560px cap, which is under the 1480px three 480px tracks would need, so the grid never reaches three columns. Row one is SundayAtlas full width, then Signal / JobAgent, then Rise / BrewLab
+- **> ~1089px**: two columns. The widened `--pad-x` leaves a 1400px content box at the 1560px cap, which is under the 1480px three 480px tracks would need, so the grid never reaches three columns. Row one is SundayAtlas full width, then Signal / JobAgent, then Rise / 15GRMS
 - **Drawer**: `width: min(100%, 600px)`, so full width on small screens
 - Verified with no horizontal overflow at 390, 768, 1024, 1440 and 1920px
 
@@ -185,6 +190,6 @@ Everything is fluid via `clamp()` and the auto-fit grid; there are no hand-writt
 5. Push to `main` (GitHub Pages auto-deploys)
 
 ## Related Repos
-- **BrewLab prototype**: `github.com/alxnhfr-bit/brewlab` (standalone HTML with React via CDN)
+- **15GRMS**, formerly BrewLab: the old build is `github.com/alxnhfr-bit/brewlab` (standalone HTML with React via CDN). The redesign is not deployed yet, which is why the case study has no live link
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
 - **Design handoff** for this redesign: `design_handoff_portfolio_redesign/` (README spec, `reference/Portfolio v4.dc.html` prototype, reference screenshots)
