@@ -21,6 +21,16 @@
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* Registered so a drift write dirties only the two layers that consume
+     it, instead of every element's inherited style. Because inherits is
+     false, the JS must write on the ambient layers themselves, never on
+     the root. The var(--lx, 0px) fallbacks below stay for Safari < 16.4,
+     which has no @property and would otherwise have no initial value.
+     Do not put `transition: all` on the ambients: these are interpolable
+     now, and the drift would ease instead of tracking the scroll. */
+  @property --lx { syntax: '<length>'; inherits: false; initial-value: 0px; }
+  @property --ly { syntax: '<length>'; inherits: false; initial-value: 0px; }
+
   :root {
     --bg: #fcfcfb;
     --ink: #17171a;
@@ -52,7 +62,9 @@
 
   /* The page wrapper owns the stacking context the ambient layer sits behind.
      isolation:isolate does not create a containing block for position:fixed,
-     so the drawer still resolves against the viewport from inside here. */
+     so the drawer still resolves against the viewport from inside here.
+     Never swap this for transform, contain or content-visibility: any of
+     those would become a containing block and break the drawer. */
   .page { position: relative; isolation: isolate; background: var(--bg); min-height: 100vh; }
 
   .container { max-width: 1560px; margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
@@ -224,7 +236,9 @@
   .flagship-title { max-width: 1560px; width: 100%; margin: 0 auto; padding: 0 var(--pad-x); }
   .flagship-title .tile-text { padding: 8px 0 clamp(28px, 3vw, 44px); background: none; }
 
-  /* ---------- Chapter: Agents (dark band) ---------- */
+  /* ---------- Chapter: Agents (dark band) ----------
+     isolation:isolate scopes the dark tiles' backdrop root to the band, and
+     overflow:hidden bounds .band-ambient's -20% outset. Leave both alone. */
   .band {
     background: var(--ink); color: var(--on-dark);
     margin: clamp(56px, 7vw, 104px) 0; padding: clamp(48px, 6vw, 88px) 0;
@@ -285,10 +299,13 @@
     mask-image: linear-gradient(to bottom, #000 74%, transparent 100%);
   }
   .flow { width: min(100%, 320px); display: flex; flex-direction: column; align-items: stretch; }
+  /* No backdrop-filter here on purpose. The mask above and the tile's own
+     backdrop-filter each establish a backdrop root, so these cards had
+     nothing to blur: verified identical in a same-frame A/B against the
+     unmodified neighbouring tile. Adding one back costs 8 render surfaces
+     and 8 GPU passes per frame for no visible change. */
   .node {
     background: linear-gradient(160deg, rgba(255,255,255,0.11), rgba(255,255,255,0.05));
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
-    backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(255,255,255,0.16); border-radius: 14px;
     padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 12px 28px -18px rgba(0,0,0,0.5);
@@ -365,13 +382,21 @@
   .drawer-body { padding: clamp(28px, 4vw, 40px) 0 48px; display: flex; flex-direction: column; gap: 32px; }
 
   /* ---------- Case studies: drawer when JS is on ---------- */
+  /* visibility, not opacity alone: a transparent element still keeps its
+     full-viewport backdrop-filter in the render tree. The 0.4s visibility
+     delay keeps it painted for the whole fade-out, so the transition is
+     unchanged. Same pattern as .drawer below. */
   html.js .drawer-overlay {
     display: block; position: fixed; inset: 0; z-index: 190;
     background: rgba(23,23,26,0.28);
     -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+    opacity: 0; pointer-events: none; visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
   }
-  html.js .drawer-overlay.is-open { opacity: 1; pointer-events: auto; }
+  html.js .drawer-overlay.is-open {
+    opacity: 1; pointer-events: auto; visibility: visible;
+    transition: opacity 0.4s ease, visibility 0s linear 0s;
+  }
   html.js .drawer {
     position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
     width: min(100%, 600px); max-width: none; margin: 0; padding: 0;
@@ -513,7 +538,7 @@
 
 <div class="container topbar">
   <div class="topbar-id">
-    <img class="topbar-avatar" src="avatar.webp" width="28" height="28" alt="Alexander Neuhofer">
+    <img class="topbar-avatar" src="avatar.webp" width="28" height="28" alt="Alexander Neuhofer" decoding="async">
     <span class="topbar-name">Alexander Neuhofer</span>
   </div>
   <div class="topbar-links">
@@ -545,11 +570,11 @@
       <svg class="cue" data-cue xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"></path></svg>
     </div>
     <div class="flagship-screens">
-      <img class="shot shot--flagship p-far-l" src="sundayatlas-extract.webp" alt="" loading="lazy" width="600" height="1304">
-      <img class="shot shot--flagship p-near-l" src="sundayatlas-trips.webp" alt="" loading="lazy" width="600" height="1304">
-      <img class="shot shot--flagship p-mid" src="sundayatlas-landing.webp" alt="SundayAtlas screens" loading="lazy" width="600" height="1304">
-      <img class="shot shot--flagship p-near-r" src="sundayatlas-itinerary.webp" alt="" loading="lazy" width="600" height="1304">
-      <img class="shot shot--flagship p-far-r" src="sundayatlas-creators.webp" alt="" loading="lazy" width="600" height="1304">
+      <img class="shot shot--flagship p-far-l" src="sundayatlas-extract.webp" alt="" loading="lazy" decoding="async" width="600" height="1304">
+      <img class="shot shot--flagship p-near-l" src="sundayatlas-trips.webp" alt="" loading="lazy" decoding="async" width="600" height="1304">
+      <img class="shot shot--flagship p-mid" src="sundayatlas-landing.webp" alt="SundayAtlas screens" loading="lazy" decoding="async" width="600" height="1304">
+      <img class="shot shot--flagship p-near-r" src="sundayatlas-itinerary.webp" alt="" loading="lazy" decoding="async" width="600" height="1304">
+      <img class="shot shot--flagship p-far-r" src="sundayatlas-creators.webp" alt="" loading="lazy" decoding="async" width="600" height="1304">
     </div>
     <div class="flagship-title">
       <div class="tile-text">
@@ -629,9 +654,9 @@
 
       <a class="tile tile--light glass" href="#rise" data-open="rise" data-glass data-reveal>
         <div class="stage stage--small">
-          <img class="shot shot--small ar-rise s-left" src="rise-training.webp" alt="" loading="lazy" width="600" height="1194">
-          <img class="shot shot--small ar-rise s-mid" src="rise-dashboard.webp" alt="Rise screens" loading="lazy" width="600" height="1194">
-          <img class="shot shot--small ar-rise s-right" src="rise-ai-coach.webp" alt="" loading="lazy" width="600" height="1194">
+          <img class="shot shot--small ar-rise s-left" src="rise-training.webp" alt="" loading="lazy" decoding="async" width="600" height="1194">
+          <img class="shot shot--small ar-rise s-mid" src="rise-dashboard.webp" alt="Rise screens" loading="lazy" decoding="async" width="600" height="1194">
+          <img class="shot shot--small ar-rise s-right" src="rise-ai-coach.webp" alt="" loading="lazy" decoding="async" width="600" height="1194">
         </div>
         <div class="tile-text">
           <div class="tile-left">
@@ -647,9 +672,9 @@
 
       <a class="tile tile--light glass" href="#15grms" data-open="15grms" data-glass data-reveal>
         <div class="stage stage--small">
-          <img class="shot shot--small ar-brew s-left" src="15grms-recipe.webp" alt="" loading="lazy" width="600" height="1224">
-          <img class="shot shot--small ar-brew s-mid" src="15grms-brew.webp" alt="15GRMS screens" loading="lazy" width="600" height="1224">
-          <img class="shot shot--small ar-brew s-right" src="15grms-journal.webp" alt="" loading="lazy" width="600" height="1224">
+          <img class="shot shot--small ar-brew s-left" src="15grms-recipe.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+          <img class="shot shot--small ar-brew s-mid" src="15grms-brew.webp" alt="15GRMS screens" loading="lazy" decoding="async" width="600" height="1224">
+          <img class="shot shot--small ar-brew s-right" src="15grms-journal.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
         </div>
         <div class="tile-text">
           <div class="tile-left">
@@ -692,7 +717,7 @@
                aria-label="Click-through of a trip being planned in SundayAtlas"></video>
         <noscript>
           <a class="cs-flow-fallback" href="sundayatlas-flow.mp4">
-            <img src="sundayatlas-flow-poster.webp" width="1280" height="720" alt="Opening frame of the SundayAtlas click-through: a phone showing the trip composer, captioned A trip, planned in one conversation.">
+            <img src="sundayatlas-flow-poster.webp" width="1280" height="720" decoding="async" alt="Opening frame of the SundayAtlas click-through: a phone showing the trip composer, captioned A trip, planned in one conversation.">
             <span class="link-u">Watch the click-through <span aria-hidden="true">&#8599;</span></span>
           </a>
         </noscript>
@@ -714,11 +739,11 @@
         </ol>
       </details>
       <div class="strip">
-        <figure><img src="sundayatlas-landing.webp" alt="SundayAtlas landing screen with the trip composer" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Landing</figcaption></figure>
-        <figure><img src="sundayatlas-trips.webp" alt="SundayAtlas collection of saved trips" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Your trips</figcaption></figure>
-        <figure><img src="sundayatlas-itinerary.webp" alt="SundayAtlas day-by-day itinerary screen" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Itinerary</figcaption></figure>
-        <figure><img src="sundayatlas-creators.webp" alt="SundayAtlas creator videos grouped into Eats, Sip, Do and Stay" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Creator videos</figcaption></figure>
-        <figure><img src="sundayatlas-extract.webp" alt="SundayAtlas places extracted from a creator video, each with an add to trip button" loading="lazy" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Add to trip</figcaption></figure>
+        <figure><img src="sundayatlas-landing.webp" alt="SundayAtlas landing screen with the trip composer" loading="lazy" decoding="async" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Landing</figcaption></figure>
+        <figure><img src="sundayatlas-trips.webp" alt="SundayAtlas collection of saved trips" loading="lazy" decoding="async" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Your trips</figcaption></figure>
+        <figure><img src="sundayatlas-itinerary.webp" alt="SundayAtlas day-by-day itinerary screen" loading="lazy" decoding="async" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Itinerary</figcaption></figure>
+        <figure><img src="sundayatlas-creators.webp" alt="SundayAtlas creator videos grouped into Eats, Sip, Do and Stay" loading="lazy" decoding="async" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Creator videos</figcaption></figure>
+        <figure><img src="sundayatlas-extract.webp" alt="SundayAtlas places extracted from a creator video, each with an add to trip button" loading="lazy" decoding="async" width="600" height="1304" style="aspect-ratio: 600 / 1304;"><figcaption>Add to trip</figcaption></figure>
       </div>
       <div>
         <div class="story-row">
@@ -898,11 +923,11 @@
         <a class="link-u cs-live" href="https://rise-health-os.lovable.app/" target="_blank" rel="noopener">View the prototype <span aria-hidden="true">&#8599;</span></a>
       </div>
       <div class="strip">
-        <figure><img src="rise-dashboard.webp" alt="Rise Dashboard screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Dashboard</figcaption></figure>
-        <figure><img src="rise-training.webp" alt="Rise Training screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Training</figcaption></figure>
-        <figure><img src="rise-ai-coach.webp" alt="Rise AI Coach screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>AI Coach</figcaption></figure>
-        <figure><img src="rise-wellbeing.webp" alt="Rise Wellbeing screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Wellbeing</figcaption></figure>
-        <figure><img src="rise-supplements.webp" alt="Rise Supplements screen" loading="lazy" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Supplements</figcaption></figure>
+        <figure><img src="rise-dashboard.webp" alt="Rise Dashboard screen" loading="lazy" decoding="async" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Dashboard</figcaption></figure>
+        <figure><img src="rise-training.webp" alt="Rise Training screen" loading="lazy" decoding="async" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Training</figcaption></figure>
+        <figure><img src="rise-ai-coach.webp" alt="Rise AI Coach screen" loading="lazy" decoding="async" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>AI Coach</figcaption></figure>
+        <figure><img src="rise-wellbeing.webp" alt="Rise Wellbeing screen" loading="lazy" decoding="async" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Wellbeing</figcaption></figure>
+        <figure><img src="rise-supplements.webp" alt="Rise Supplements screen" loading="lazy" decoding="async" width="600" height="1194" style="aspect-ratio: 600 / 1194;"><figcaption>Supplements</figcaption></figure>
       </div>
       <div>
         <div class="story-row">
@@ -938,11 +963,11 @@
         <p class="cs-tagline">Coffee Brewing Assistant</p>
       </div>
       <div class="strip">
-        <figure><img src="15grms-brew.webp" alt="15GRMS brew home with the last recipe and the recipe library" loading="lazy" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brew</figcaption></figure>
-        <figure><img src="15grms-recipe.webp" alt="15GRMS recipe detail showing the timed brew steps" loading="lazy" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Recipe</figcaption></figure>
-        <figure><img src="15grms-brewing.webp" alt="15GRMS brew timer part way through the first pour" loading="lazy" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brewing</figcaption></figure>
-        <figure><img src="15grms-complete.webp" alt="15GRMS brew complete screen with rating, taste tags and a grind suggestion" loading="lazy" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Complete</figcaption></figure>
-        <figure><img src="15grms-journal.webp" alt="15GRMS journal entry with rating, taste tags and notes" loading="lazy" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Journal</figcaption></figure>
+        <figure><img src="15grms-brew.webp" alt="15GRMS brew home with the last recipe and the recipe library" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brew</figcaption></figure>
+        <figure><img src="15grms-recipe.webp" alt="15GRMS recipe detail showing the timed brew steps" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Recipe</figcaption></figure>
+        <figure><img src="15grms-brewing.webp" alt="15GRMS brew timer part way through the first pour" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brewing</figcaption></figure>
+        <figure><img src="15grms-complete.webp" alt="15GRMS brew complete screen with rating, taste tags and a grind suggestion" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Complete</figcaption></figure>
+        <figure><img src="15grms-journal.webp" alt="15GRMS journal entry with rating, taste tags and notes" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Journal</figcaption></figure>
       </div>
       <div>
         <div class="story-row">
@@ -1203,6 +1228,13 @@
       if (!r.width || !r.height) return;
       var mx = ((e.clientX - r.left) / r.width) * 100;
       var my = ((e.clientY - r.top) / r.height) * 100;
+      /* Quantise and skip unchanged writes. Scrolling moves the box under
+         a stationary cursor, so the browser keeps dispatching moves whose
+         only effect would be to repaint the whole tile. */
+      mx = Math.round(mx * 2) / 2;
+      my = Math.round(my * 2) / 2;
+      var prev = glassState && glassState.get(el);
+      if (prev && prev.mx === mx && prev.my === my && prev.spec === 1) return;
       if (glassState) glassState.set(el, { mx: mx, my: my, spec: 1 });
       setVars(el, mx, my, 1);
     }, { passive: true });
@@ -1214,6 +1246,9 @@
       if (e.relatedTarget && el.contains(e.relatedTarget)) return;
       var from = (glassState && glassState.get(el)) || { mx: rest.mx, my: rest.my, spec: rest.spec };
       var f = { mx: from.mx, my: from.my, spec: from.spec };
+      /* Cancel any decay already running on this tile, so two overlapping
+         loops cannot fight over the same custom properties. */
+      if (from.raf) cancelAnimationFrame(from.raf);
       var t0 = performance.now();
       /* Custom properties cannot transition without @property, so the
          ease back to rest is driven by hand. */
@@ -1221,27 +1256,67 @@
         var k = Math.min(1, (now - t0) / 520);
         var e2 = 1 - Math.pow(1 - k, 3);
         setVars(el, f.mx + (rest.mx - f.mx) * e2, f.my + (rest.my - f.my) * e2, f.spec * (1 - e2));
-        if (k < 1) requestAnimationFrame(step);
-        else if (glassState) glassState.delete(el);
+        if (k < 1) {
+          var id = requestAnimationFrame(step);
+          if (glassState) glassState.set(el, { mx: f.mx, my: f.my, spec: f.spec, raf: id });
+        } else if (glassState) {
+          glassState.delete(el);
+        }
       };
       requestAnimationFrame(step);
     }, { passive: true });
 
     if (!reduce) {
-      var scrollRaf = 0;
+      /* Write on the two ambient layers, never on the root: --lx/--ly are
+         registered with inherits:false, so a root value would not reach
+         them. Falls back to the root if they are ever renamed, so the
+         drift degrades instead of freezing. */
+      var ambients = document.querySelectorAll('[data-ambient]');
+      var lightTargets = ambients.length
+        ? Array.prototype.slice.call(ambients)
+        : [document.documentElement];
+
+      /* scrollHeight only changes on resize, so cache it rather than
+         forcing a layout read inside every scroll frame. */
+      var scrollMax = 1;
+      var measure = function () {
+        scrollMax = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      };
+      measure();
+      window.addEventListener('resize', measure, { passive: true });
+
+      var scrollRaf = 0, settleTimer = 0, lastLx = NaN, lastLy = NaN;
+
+      /* Snap to a 2px grid while the page is moving, so the ambient
+         gradients repaint on a fraction of the frames instead of all of
+         them, then write the exact value once the scroll settles so every
+         resting state matches the design precisely. lastLx/lastLy start
+         as NaN so the first write always lands. */
+      var writeDrift = function (snap) {
+        var p = Math.min(1, window.scrollY / scrollMax);
+        var lx = Math.sin(p * Math.PI * 1.6) * 90;
+        var ly = p * 180 - 60;
+        if (snap) { lx = Math.round(lx / 2) * 2; ly = Math.round(ly / 2) * 2; }
+        if (lx === lastLx && ly === lastLy) return;
+        lastLx = lx; lastLy = ly;
+        var sx = lx.toFixed(1) + 'px', sy = ly.toFixed(1) + 'px';
+        for (var i = 0; i < lightTargets.length; i++) {
+          lightTargets[i].style.setProperty('--lx', sx);
+          lightTargets[i].style.setProperty('--ly', sy);
+        }
+      };
+
       var onScroll = function () {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(function () { writeDrift(false); }, 120);
         if (scrollRaf) return;
         scrollRaf = requestAnimationFrame(function () {
           scrollRaf = 0;
-          var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-          var p = Math.min(1, window.scrollY / max);
-          var root = document.documentElement.style;
-          root.setProperty('--lx', (Math.sin(p * Math.PI * 1.6) * 90).toFixed(1) + 'px');
-          root.setProperty('--ly', (p * 180 - 60).toFixed(1) + 'px');
+          writeDrift(true);
         });
       };
       window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
+      writeDrift(false);
     }
   } catch (err) {}
 

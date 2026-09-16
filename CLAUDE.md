@@ -221,6 +221,28 @@ Project 05 was renamed from BrewLab to **15GRMS**. The anchor id, the `data-open
 
 **That id starts with a digit, so `document.querySelector('#15grms')` throws** ("not a valid selector") because a CSS identifier cannot begin with a digit unescaped. The site is safe because its JS resolves case studies with `document.getElementById(id)` and only ever builds the hash as a string. If you ever need a selector, scope it off the element (`document.getElementById('15grms').querySelector(...)`) or escape it as `#\\31 5grms`. The same applies to any CSS rule or `:target` selector.
 
+## Scroll performance
+
+Scrolling was reported as not smooth after the redesign shipped. A six-dimension analysis plus adversarial review found the per-frame budget is dominated by **`backdrop-filter` re-resolution**, not by anything in the JS. The glass cannot cache a filtered result across frames because `.ambient` is `position: fixed` while the glass scrolls, so the element-to-backdrop offset changes every frame by construction.
+
+Correct the surface count before reasoning about it: the often-quoted "21 backdrop-filter elements" is wrong for the scrolling page. With the drawer closed, `html.js .case-study { display: none }` and the drawer's own `visibility: hidden` take all 6 pills out of the box tree, so the live set is **5 glass tiles + 8 nodes**, and after the change below, **5**.
+
+### Applied, all verified to change nothing visually
+- **`.node` carries no `backdrop-filter`.** `.stage--diagram` (via `mask-image`) and the enclosing `.glass-dark` (via its own `backdrop-filter`) each establish a Backdrop Root, so those 8 cards were blurring an empty backdrop for 8 render surfaces and 8 GPU passes per frame. Verified with a same-frame A/B (override applied to Signal's cards only, JobAgent's left intact, both captured in one frame): no visible difference. **Verified in Chromium only.** If the Agents cards ever look flat in Safari, that engine is not honouring the backdrop root and the declarations must come back as a pair.
+- **`.drawer-overlay` gets `visibility: hidden` while closed**, with `transition: ... visibility 0s linear 0.4s` so the fade-out is unchanged. `opacity: 0` alone does not remove a full-viewport `backdrop-filter` from the render tree.
+- **`decoding="async"` on every `<img>`.** Six tile screenshots fall outside Chrome's lazy-load range at first paint and fetch mid-scroll; `decoding="auto"` permits a synchronous main-thread decode exactly as they enter the viewport.
+- **The `--lx`/`--ly` drift is quantized and gated.** Snapped to a 2px grid while the page moves, then written exactly once scrolling settles (120ms), so every resting state still matches the design. `lastLx`/`lastLy` start as `NaN` so the mount-time write always lands.
+- **`@property --lx` / `--ly` with `inherits: false`.** Confines the recalc to the two consumers instead of dirtying every element's inherited style. **This makes the element-level write mandatory:** with `inherits: false`, a value set on the root never reaches the ambient layers. The JS writes on `[data-ambient]` and falls back to the root only if those are ever renamed. Keep the `var(--lx, 0px)` fallbacks for Safari < 16.4, which has no `@property`. Never put `transition: all` on the ambients now that these are interpolable, or the drift will ease instead of tracking the scroll.
+
+### Do not do these (assessed and rejected)
+- **`will-change: transform` or `translateZ(0)` on `.ambient`.** It already has an infinite transform animation and a filter, so it is composited already. This buys no promotion and pins roughly 34 MB of backing store.
+- **`contain`, `content-visibility`, or `transform` on `.page`, `<main>`, or any ancestor of `.drawer`.** All create a containing block for `position: fixed` and would break the drawer. `isolation: isolate` is used precisely because it does not.
+- **Moving `overflow-x: hidden` off `body`.** Because `html` computes to `visible`, body's overflow propagates to the viewport and the document scroller stays the viewport. Moving it would relocate the scroller and break the drawer.
+- **Splitting the ambient gradients onto child layers** to drive drift by transform. Not pixel-identical (translating a child moves the gradient's clip, not just its centre), and it moves work onto the compositor, which is the thread already under load.
+
+### Open: the one remaining lever
+`.glass` / `.glass-dark` still carry `blur(30px)`. Because `.ambient` is already `blur(34px)` and `.band-ambient` `blur(36px)`, the glass's own blur only takes effective sigma from 34 to 45.3 (light) and 36 to 46.9 (dark), while costing a multi-pass Gaussian over roughly 8.9 Mpx per frame at dpr 2 (flagship ~4.46 Mpx, the four tiles ~4.48 Mpx). Dropping the blur term and keeping `saturate()`/`brightness()` collapses that to a single colour-matrix pass. It is a real if sub-perceptual change, so it is **the owner's call, not a silent optimisation**, given the 1:1 constraint.
+
 ## Content Rules
 - **No em dashes or en dashes** in any content, in any encoding (literal, `&#8212;`, `&mdash;`, `&#8211;`, `&ndash;`). Use commas, semicolons, colons or periods.
 - **No mention of "Lovable" by name** in SundayAtlas content. Rise and 15GRMS may mention it.
