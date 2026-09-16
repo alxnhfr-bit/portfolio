@@ -4,7 +4,7 @@
 - **Repo**: `github.com/alxnhfr-bit/portfolio`
 - **Live URL**: `https://alxnhfr-bit.github.io/portfolio/`
 - **Hosting**: GitHub Pages (main branch, single `index.html`)
-- **File**: Self-contained `index.html` (~70 KB) plus 17 `.webp` images and one `.mp4` in the repo root
+- **File**: Self-contained `index.html` (~75 KB) plus 17 `.webp` images and one `.mp4` in the repo root
 
 ## Owner
 Alexander Neuhofer - Senior PM at Zalando, Berlin. Building AI product prototypes independently. Portfolio targets consumer PM roles in APAC.
@@ -242,6 +242,10 @@ Correct the surface count before reasoning about it: the often-quoted "21 backdr
 
 ### Open: the one remaining lever
 `.glass` / `.glass-dark` still carry `blur(30px)`. Because `.ambient` is already `blur(34px)` and `.band-ambient` `blur(36px)`, the glass's own blur only takes effective sigma from 34 to 45.3 (light) and 36 to 46.9 (dark), while costing a multi-pass Gaussian over roughly 8.9 Mpx per frame at dpr 2 (flagship ~4.46 Mpx, the four tiles ~4.48 Mpx). Dropping the blur term and keeping `saturate()`/`brightness()` collapses that to a single colour-matrix pass. It is a real if sub-perceptual change, so it is **the owner's call, not a silent optimisation**, given the 1:1 constraint.
+
+**Decision (2026-09-16): left in place.** The owner chose to ship the no-visual-change fixes above first and judge the result in real use. Do not drop or reduce the glass blur without asking again. If scrolling is still not smooth, this is the next lever, and the options costed were: flagship only (~4.46 Mpx/frame, roughly half the remaining win, the four smaller tiles stay pixel-identical), all five surfaces (~8.9 Mpx/frame, the full win), or halving to `blur(14px)` (effective sigma ~36.8 instead of 45.3, closer to the approved look while removing most of the downscale/upscale cost).
+
+Note for whoever picks this up: the before/after screenshot for that change was never captured, because the Browser pane was not displayed and the page therefore composited no frames. Get a real visual A/B before shipping it.
 
 ## Content Rules
 - **No em dashes or en dashes** in any content, in any encoding (literal, `&#8212;`, `&mdash;`, `&#8211;`, `&ndash;`). Use commas, semicolons, colons or periods.
