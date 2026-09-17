@@ -112,8 +112,9 @@ The reference drove them from scroll (`p = min(1, scrollY / (scrollHeight - inne
 
 ### Chapter compositions
 Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately cropped by its bottom edge. They overlap via negative margins and stack with z-index:
-- **Flagship** (SundayAtlas), stage `clamp(320px, 38vw, 540px)`, screens `clamp(132px, 14.5vw, 204px)` at `600/1304`: extract (mt 64, mr -24, z1), trips (mt 32, mr -24, z2), landing (z3), itinerary (mt 32, ml -24, z2), creators (mt 64, ml -24, z1)
-- **Prototypes** (Rise, 15GRMS), stage `clamp(220px, 24vw, 320px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). **The stage height is deliberately identical to the Agents stage** so the two chapters' cards match; keep them in sync.
+- **Flagships** (SundayAtlas and 15GRMS), stage `clamp(320px, 38vw, 540px)`, screens `clamp(132px, 14.5vw, 204px)`. SundayAtlas at `600/1304`: extract (mt 64, mr -24, z1), trips (mt 32, mr -24, z2), landing (z3), itinerary (mt 32, ml -24, z2), creators (mt 64, ml -24, z1)
+- 15GRMS uses the same flagship fan at `600/1224`, via `class="shot shot--flagship ar-brew"`: `.ar-brew` is declared after `.shot--flagship` so it wins the aspect-ratio. Order: journal (mt 64, mr -24, z1), complete (mt 32, mr -24, z2), brew (z3), recipe (mt 32, ml -24, z2), brewing (mt 64, ml -24, z1)
+- **Prototypes** (Rise only, since 15GRMS was promoted), stage `clamp(220px, 24vw, 320px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). **The stage height is deliberately identical to the Agents stage** so the two chapters' cards match; keep them in sync.
 - **Agents** (Signal, JobAgent) have no screenshots. Each shows its pipeline as a stack of glass cards joined by 1px x 14px connectors, in a `clamp(220px, 24vw, 320px)` container faded out with `mask-image: linear-gradient(to bottom, #000 74%, transparent 100%)`
 
 **Gutters are identical for all five cards (owner request, 2026-09-17).** The reference had the flagship full-bleed, edge to edge, while the four chapter cards sat inside `.container`. The flagship is now inset to match, via `width: calc(min(100%, 1560px) - 2 * var(--pad-x))` plus `margin-inline: auto` on `.flagship` itself. That reproduces the container geometry without a wrapper, so the markup stays flat and the flagship keeps its own stacking. Because of it, `.flagship-title` must NOT re-apply `max-width`/`--pad-x` (that would double the inset); it is a plain `width: 100%`, and its `.tile-text` takes the same `clamp(20px, 2.5vw, 32px)` internal padding as the other cards, which also lines its title up with the Signal and Rise titles. Measured equal at 390, 768, 1440 and 1920. Side effect worth knowing: the flagship is now `2 * --pad-x` narrower, so the five-phone fan crops slightly earlier than before.
@@ -152,23 +153,27 @@ Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately 
 
   main
     div.work
-      Chapter "Shipped"
+      Chapter "Shipped"          TWO flagship bands, equal billing
         - label inside .container
-        - a.flagship.glass  still a sibling of .container in the markup,
-          but inset to match every other card (see below),
+        - a.flagship.glass x2, siblings of .container in the markup but
+          inset to match every other card (see below), each
           min-height min(86vh, 900px), column with space-between:
-            scroll cue (flex:1, pinned bottom) / 5 screens / title row
+            cue-wrap (flex:1) / 5 screens / title row
+            01 SundayAtlas  Live . Flagship   (scroll cue in the cue-wrap)
+            02 15GRMS       Live . App Store  (cue-wrap left empty: the
+                                               cue only belongs on the
+                                               first thing you see)
+          .flagship + .flagship { margin-top: 20px } matches the grid gap.
 
       Chapter "Agents"  (.band, full-width #17171a)
         - .band-ambient, its own light field
         - 2-up grid of dark glass tiles:
-            02 Signal    Live . Runs weekly (eval-loop stack)
-            03 JobAgent  Live . Runs daily  (daily-pipeline stack, dark "3 . Score" card)
+            03 Signal    Live . Runs weekly (eval-loop stack)
+            04 JobAgent  Live . Runs daily  (daily-pipeline stack, dark "3 . Score" card)
 
       Chapter "Prototypes"
-        - 2-up grid of light glass tiles:
-            04 Rise    Prototype  (3 screens)
-            05 15GRMS  Prototype  (3 screens in the tile, all 5 in the drawer)
+        - grid of light glass tiles, currently ONE:
+            05 Rise    Prototype  (3 screens)
 
     div.drawer-overlay
 
@@ -218,7 +223,7 @@ The reference prototype is `reference/Portfolio v5b Chapters.dc.html`. Two thing
 The reference was also authored against an older repo snapshot: it names nine images that no longer exist (`sundayatlas-home/destinations/map/inspo`, `brewlab-*`), calls project 05 "BrewLab", and gives it the tagline "AI Coffee Brewing Assistant". **Content was taken from the live `index.html`, not from the reference.**
 
 ### Naming and the 15grms id
-Project 05 was renamed from BrewLab to **15GRMS**. The anchor id, the `data-open`/`data-next` values, the entry in the JS `IDS` array and the image filenames all use lowercase `15grms`; the visible name is uppercase `15GRMS`.
+Project 05 was renamed from BrewLab to **15GRMS**, and is now project **02**, promoted out of Prototypes when it shipped to the App Store on 17 September 2026. The anchor id, the `data-open`/`data-next` values, the entry in the JS `IDS` array and the image filenames all use lowercase `15grms`; the visible name is uppercase `15GRMS`.
 
 **That id starts with a digit, so `document.querySelector('#15grms')` throws** ("not a valid selector") because a CSS identifier cannot begin with a digit unescaped. The site is safe because its JS resolves case studies with `document.getElementById(id)` and only ever builds the hash as a string. If you ever need a selector, scope it off the element (`document.getElementById('15grms').querySelector(...)`) or escape it as `#\\31 5grms`. The same applies to any CSS rule or `:target` selector.
 
@@ -273,7 +278,8 @@ Surface-count note, since the wrong number circulated for a while: the "21 backd
 - **`og:image` is still missing**, so shared links render a text-only card. A 1200x630 social image is the remaining SEO task.
 - **`<title>` and `og:title` still say "Product Builder"** even though the hero role line was dropped. Kept deliberately because the existing head meta and OG tags had to be preserved.
 - **Signal has no repo link.** If the repo is made public, add a live link to the Signal case-study head like the other projects have.
-- **15GRMS story copy still describes the old build** (ratio calculator, curated bean shop) rather than the dial-in feedback loop the current screens show, and its home screen says "The Adler Original" while the recipe and journal screens say "The Hoffmann Method".
+- **A lone card stretches its grid.** Prototypes now holds only Rise, and `grid--proto` is `auto-fit`, so that card runs the full 1360px content width at 1440px with three ~160px phones centred in it. Measured, not yet judged visually: the preview pane stopped compositing. If it reads as too sparse, cap it (`.grid--proto > :only-child { max-width: calc(50% - 10px) }`) or give Prototypes a second card.
+- 15GRMS home screen says "The Adler Original" while the recipe and journal screens say "The Hoffmann Method". The story copy itself was rewritten from the app README on 17 September 2026 and now matches the shipped product.
 - **Not yet checked in Safari.** All 7 `backdrop-filter` declarations carry `-webkit-backdrop-filter`, but the glass has only been verified in the Chromium-based preview.
 
 ## Responsive Behaviour
@@ -292,6 +298,6 @@ Everything is fluid via `clamp()` and auto-fit grids; there are no hand-written 
 **Preview gotcha:** when the browser pane is not focused (`document.hasFocus() === false`), CSS transitions and `requestAnimationFrame` stall, and screenshots lag a step behind. A drawer that reports `.is-open` but a computed `transform` of `translateX(600px)` is this artifact, not a bug; confirm by setting `transition: none` and re-reading the computed value.
 
 ## Related Repos
-- **15GRMS**, formerly BrewLab: the old build is `github.com/alxnhfr-bit/brewlab` (standalone HTML with React via CDN). The redesign is not deployed yet, which is why the case study has no live link
+- **15GRMS**, formerly BrewLab: **live on the App Store since 17 September 2026**, https://apps.apple.com/us/app/15grms/id6811369525 . The repo is still `github.com/alxnhfr-bit/brewlab` (`brewlab` is the internal codename and survives in the repo name, the bundle id and the store key; the public name is 15GRMS). React + TypeScript in a Capacitor shell, iOS 16+, no network requests. Its README is the source of truth for the case-study copy: do not describe features from the old web build
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
 - **Design handoff** for the Liquid Glass redesign: `design_handoff_portfolio_redesign/` (README spec, PROMPT.md, `reference/Portfolio v5b Chapters.dc.html`)

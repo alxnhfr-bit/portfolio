@@ -26,7 +26,7 @@
      false, the JS must write on the ambient layers themselves, never on
      the root. The var(--lx, 0px) fallbacks below stay for Safari < 16.4,
      which has no @property and would otherwise have no initial value.
-     These values are now written once at mount and never again: see the
+     These values are written once at mount and never again: see the
      comment above .ambient. */
   @property --lx { syntax: '<length>'; inherits: false; initial-value: 0px; }
   @property --ly { syntax: '<length>'; inherits: false; initial-value: 0px; }
@@ -79,7 +79,7 @@
      raster tiles and re-blurred the whole 128vw x 128vh field. Measured
      on the owner's hardware by A/B toggling the live page, freezing these
      was the single change that made scrolling smooth, with blur(34px),
-     the omAmbient animation and all five glass surfaces still at full
+     the omAmbient animation and every glass surface still at full
      strength. Do not reintroduce scroll-driven drift through these
      properties. If the effect is wanted back it has to be driven by
      transform on split child layers, one per sign pair, so the work stays
@@ -215,7 +215,7 @@
   .grid--agents { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
   .grid--proto { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
 
-  /* ---------- Chapter: Shipped (full-bleed flagship band) ---------- */
+  /* ---------- Chapter: Shipped (two flagship bands) ---------- */
   .flagship {
     display: flex; flex-direction: column; justify-content: space-between;
     min-height: min(86vh, 900px);
@@ -228,6 +228,9 @@
     width: calc(min(100%, 1560px) - 2 * var(--pad-x));
     margin-inline: auto;
   }
+  /* Two shipped products share this chapter, so the second band needs the
+     same separation the grids use between cards. */
+  .flagship + .flagship { margin-top: 20px; }
   /* The band is near full screen, so it brightens in place instead of lifting. */
   .flagship:hover {
     box-shadow:
@@ -241,6 +244,8 @@
     0%, 100% { transform: translateY(0); opacity: 0.45; }
     50% { transform: translateY(7px); opacity: 0.8; }
   }
+  /* Also used empty, as a spacer, on the second band: the scroll cue only
+     makes sense on the first thing you see. */
   .cue-wrap { flex: 1; min-height: 72px; display: flex; align-items: flex-end; justify-content: center; padding: 0 0 24px; }
   /* will-change lifts the cue onto its own 26x26 layer so its animation
      stops dirtying the flagship's backdrop-filter surface 60 times a
@@ -307,6 +312,8 @@
   }
   .shot--flagship { width: clamp(132px, 14.5vw, 204px); aspect-ratio: 600 / 1304; }
   .shot--small { width: clamp(120px, 12vw, 160px); }
+  /* These follow .shot--flagship so they win the aspect-ratio for the
+     phone sets that are not 600x1304. */
   .ar-rise { aspect-ratio: 600 / 1194; }
   .ar-brew { aspect-ratio: 600 / 1224; }
 
@@ -359,7 +366,7 @@
   /* The Agents taglines are long enough to push their status row onto a
      line of its own; the short Prototype taglines are not, which left the
      two chapters' cards 28px apart. Forcing the same wrap here squares
-     them up without touching the Agents cards or the flagship. Paired
+     them up without touching the Agents cards or the flagships. Paired
      with .stage--small matching .stage--diagram above. */
   .tile--light .tile-left { flex: 1 1 100%; }
   .tile-heading { display: flex; align-items: baseline; gap: 14px; }
@@ -625,6 +632,29 @@
     </div>
   </a>
 
+  <a class="flagship glass" href="#15grms" data-open="15grms" data-glass data-reveal>
+    <div class="cue-wrap" aria-hidden="true"></div>
+    <div class="flagship-screens">
+      <img class="shot shot--flagship ar-brew p-far-l" src="15grms-journal.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+      <img class="shot shot--flagship ar-brew p-near-l" src="15grms-complete.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+      <img class="shot shot--flagship ar-brew p-mid" src="15grms-brew.webp" alt="15GRMS screens" loading="lazy" decoding="async" width="600" height="1224">
+      <img class="shot shot--flagship ar-brew p-near-r" src="15grms-recipe.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+      <img class="shot shot--flagship ar-brew p-far-r" src="15grms-brewing.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+    </div>
+    <div class="flagship-title">
+      <div class="tile-text">
+        <div class="tile-left">
+          <div class="tile-heading"><span class="tile-num">02</span><span class="tile-name">15GRMS</span></div>
+          <p class="tile-tagline">A coffee brewing companion for iPhone.</p>
+        </div>
+        <div class="tile-right">
+          <span class="status"><span class="dot"></span>Live &middot; App Store</span>
+          <span class="cs-cue">Case study</span>
+        </div>
+      </div>
+    </div>
+  </a>
+
   <div class="band" data-reveal>
     <div class="band-ambient" data-ambient="band" aria-hidden="true"></div>
     <div class="container">
@@ -645,7 +675,7 @@
           </div>
           <div class="tile-text">
             <div class="tile-left">
-              <div class="tile-heading"><span class="tile-num">02</span><span class="tile-name">Signal</span></div>
+              <div class="tile-heading"><span class="tile-num">03</span><span class="tile-name">Signal</span></div>
               <p class="tile-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
             </div>
             <div class="tile-right">
@@ -669,7 +699,7 @@
           </div>
           <div class="tile-text">
             <div class="tile-left">
-              <div class="tile-heading"><span class="tile-num">03</span><span class="tile-name">JobAgent</span></div>
+              <div class="tile-heading"><span class="tile-num">04</span><span class="tile-name">JobAgent</span></div>
               <p class="tile-tagline">The same agent, built twice, to find out what the platform costs you.</p>
             </div>
             <div class="tile-right">
@@ -695,26 +725,8 @@
         </div>
         <div class="tile-text">
           <div class="tile-left">
-            <div class="tile-heading"><span class="tile-num">04</span><span class="tile-name">Rise</span></div>
+            <div class="tile-heading"><span class="tile-num">05</span><span class="tile-name">Rise</span></div>
             <p class="tile-tagline">AI Health &amp; Fitness OS</p>
-          </div>
-          <div class="tile-right">
-            <span class="status"><span class="dot dot--muted"></span>Prototype</span>
-            <span class="cs-cue">Case study</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="tile tile--light glass" href="#15grms" data-open="15grms" data-glass data-reveal>
-        <div class="stage stage--small">
-          <img class="shot shot--small ar-brew s-left" src="15grms-recipe.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
-          <img class="shot shot--small ar-brew s-mid" src="15grms-brew.webp" alt="15GRMS screens" loading="lazy" decoding="async" width="600" height="1224">
-          <img class="shot shot--small ar-brew s-right" src="15grms-journal.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
-        </div>
-        <div class="tile-text">
-          <div class="tile-left">
-            <div class="tile-heading"><span class="tile-num">05</span><span class="tile-name">15GRMS</span></div>
-            <p class="tile-tagline">Coffee Brewing Assistant</p>
           </div>
           <div class="tile-right">
             <span class="status"><span class="dot dot--muted"></span>Prototype</span>
@@ -837,13 +849,88 @@
         </div>
       </div>
       <div class="cs-next">
-        <a class="pill next-btn" href="#signal" data-next="signal"><span class="next-word">Next</span><span>02 Signal</span><span aria-hidden="true">&#8594;</span></a>
+        <a class="pill next-btn" href="#15grms" data-next="15grms"><span class="next-word">Next</span><span>02 15GRMS</span><span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </article>
+
+    <article class="case-study" id="15grms" data-reveal>
+      <div class="cs-head">
+        <p class="cs-meta"><span>02</span><span class="dot"></span><span>Live &middot; App Store</span></p>
+        <h2 class="cs-title">15GRMS</h2>
+        <p class="cs-tagline">A coffee brewing companion for iPhone.</p>
+        <a class="link-u cs-live" href="https://apps.apple.com/us/app/15grms/id6811369525" target="_blank" rel="noopener" aria-label="Download 15GRMS on the App Store">Download on the App Store <span aria-hidden="true">&#8599;</span></a>
+      </div>
+      <div class="strip">
+        <figure><img src="15grms-brew.webp" alt="15GRMS brew home with the last recipe and the recipe library" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brew</figcaption></figure>
+        <figure><img src="15grms-recipe.webp" alt="15GRMS recipe detail showing the timed brew steps" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Recipe</figcaption></figure>
+        <figure><img src="15grms-brewing.webp" alt="15GRMS brew timer part way through the first pour" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brewing</figcaption></figure>
+        <figure><img src="15grms-complete.webp" alt="15GRMS brew complete screen with rating, taste tags and a grind suggestion" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Complete</figcaption></figure>
+        <figure><img src="15grms-journal.webp" alt="15GRMS journal entry with rating, taste tags and notes" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Journal</figcaption></figure>
+      </div>
+      <div>
+        <div class="story-row">
+          <p class="story-label">The Problem</p>
+          <p class="story-statement">Brewing by hand means watching a clock and a scale at the same time.</p>
+          <p class="story-detail">Every step has its own water target and its own timing. Generic timers do not know the recipe, and written recipes do not keep time, so you end up reading one while counting against the other, with a kettle in your other hand.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Insight</p>
+          <p class="story-statement">Run the recipe as the timer, not alongside it.</p>
+          <p class="story-detail">Each step shows how much water should be on the scale at that moment and counts down against the wall clock, so you can watch the kettle instead of the phone.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Product</p>
+          <p class="story-statement">Shipped on the App Store: twelve recipes across three methods, free, and it makes no network requests at all.</p>
+          <p class="story-detail">React and TypeScript in a Capacitor shell, iOS 16 and up, 2.6 MB. Your last brew waits on the home screen with the dose you used, so Start to pouring takes about five seconds. Change dose, ratio or temperature and every pour target recalculates live, remembered per recipe. No account, no ads, no tracking; recipes and fonts are bundled, which is why the App Store privacy answer is &ldquo;Data Not Collected&rdquo; and why that claim is verifiable rather than asserted.</p>
+        </div>
+        <div class="story-row">
+          <p class="story-label">The Takeaway</p>
+          <p class="story-statement">The hard part is the part that has to keep working while the screen is off.</p>
+          <p class="story-detail">A phone gets locked mid-brew, which suspends the web view entirely, so a counter-based timer would drift or stall. Steps run on absolute end timestamps instead, and when several fall overdue at once each one chains from the previous step&#8217;s scheduled end rather than from the current time, landing on the same schedule the notifications were already set against. That single decision is the difference between a demo and a timer you can trust with a kettle in your hand.</p>
+        </div>
+      </div>
+      <div class="features">
+        <div class="feature">
+          <h3>Brewing</h3>
+          <ul>
+            <li>Twelve recipes across V60, AeroPress and cold brew, each step showing its cumulative pour target.</li>
+            <li>Your last brew waits on the home screen with the dose you used; Start to pouring is about five seconds.</li>
+            <li>Dose, ratio and temperature adjust live, and the change is remembered per recipe.</li>
+          </ul>
+        </div>
+        <div class="feature">
+          <h3>The timer</h3>
+          <ul>
+            <li>Steps run on absolute end timestamps, so the count stays correct through a locked screen.</li>
+            <li>Overdue steps chain from the previous step&#8217;s scheduled end, not from the current time.</li>
+            <li>Notifications are only requested for the two multi-hour steeps, since iOS grants one prompt per install.</li>
+          </ul>
+        </div>
+        <div class="feature">
+          <h3>The journal</h3>
+          <ul>
+            <li>Every brew is logged the moment it finishes, with nothing to type.</li>
+            <li>Rate it, tag how it tasted, add notes if you want to. Swipe to delete.</li>
+            <li>Export the whole journal as JSON through the iOS share sheet.</li>
+          </ul>
+        </div>
+        <div class="feature">
+          <h3>Coaching and craft</h3>
+          <ul>
+            <li>Too bitter, sour or thin? One tap suggests a single conservative adjustment and explains why.</li>
+            <li>The adjustment is applied the next time you brew that recipe.</li>
+            <li>Three palettes in light and dark; brew methods are coded by shape, never by colour.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cs-next">
+        <a class="pill next-btn" href="#signal" data-next="signal"><span class="next-word">Next</span><span>03 Signal</span><span aria-hidden="true">&#8594;</span></a>
       </div>
     </article>
 
     <article class="case-study" id="signal" data-reveal>
       <div class="cs-head">
-        <p class="cs-meta"><span>02</span><span class="dot"></span><span>Live &middot; Runs weekly</span></p>
+        <p class="cs-meta"><span>03</span><span class="dot"></span><span>Live &middot; Runs weekly</span></p>
         <h2 class="cs-title">Signal</h2>
         <p class="cs-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
       </div>
@@ -886,13 +973,13 @@
         </div>
       </div>
       <div class="cs-next">
-        <a class="pill next-btn" href="#jobagent" data-next="jobagent"><span class="next-word">Next</span><span>03 JobAgent</span><span aria-hidden="true">&#8594;</span></a>
+        <a class="pill next-btn" href="#jobagent" data-next="jobagent"><span class="next-word">Next</span><span>04 JobAgent</span><span aria-hidden="true">&#8594;</span></a>
       </div>
     </article>
 
     <article class="case-study" id="jobagent" data-reveal>
       <div class="cs-head">
-        <p class="cs-meta"><span>03</span><span class="dot"></span><span>Live &middot; Runs daily</span></p>
+        <p class="cs-meta"><span>04</span><span class="dot"></span><span>Live &middot; Runs daily</span></p>
         <h2 class="cs-title">JobAgent</h2>
         <p class="cs-tagline">The same agent, built twice, to find out what the platform costs you.</p>
       </div>
@@ -946,13 +1033,13 @@
         </div>
       </div>
       <div class="cs-next">
-        <a class="pill next-btn" href="#rise" data-next="rise"><span class="next-word">Next</span><span>04 Rise</span><span aria-hidden="true">&#8594;</span></a>
+        <a class="pill next-btn" href="#rise" data-next="rise"><span class="next-word">Next</span><span>05 Rise</span><span aria-hidden="true">&#8594;</span></a>
       </div>
     </article>
 
     <article class="case-study" id="rise" data-reveal>
       <div class="cs-head">
-        <p class="cs-meta"><span>04</span><span class="dot dot--muted"></span><span>Prototype</span></p>
+        <p class="cs-meta"><span>05</span><span class="dot dot--muted"></span><span>Prototype</span></p>
         <h2 class="cs-title">Rise</h2>
         <p class="cs-tagline">AI Health &amp; Fitness OS</p>
         <a class="link-u cs-live" href="https://rise-health-os.lovable.app/" target="_blank" rel="noopener">View the prototype <span aria-hidden="true">&#8599;</span></a>
@@ -987,46 +1074,6 @@
         </div>
       </div>
       <div class="cs-next">
-        <a class="pill next-btn" href="#15grms" data-next="15grms"><span class="next-word">Next</span><span>05 15GRMS</span><span aria-hidden="true">&#8594;</span></a>
-      </div>
-    </article>
-
-    <article class="case-study" id="15grms" data-reveal>
-      <div class="cs-head">
-        <p class="cs-meta"><span>05</span><span class="dot dot--muted"></span><span>Prototype</span></p>
-        <h2 class="cs-title">15GRMS</h2>
-        <p class="cs-tagline">Coffee Brewing Assistant</p>
-      </div>
-      <div class="strip">
-        <figure><img src="15grms-brew.webp" alt="15GRMS brew home with the last recipe and the recipe library" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brew</figcaption></figure>
-        <figure><img src="15grms-recipe.webp" alt="15GRMS recipe detail showing the timed brew steps" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Recipe</figcaption></figure>
-        <figure><img src="15grms-brewing.webp" alt="15GRMS brew timer part way through the first pour" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Brewing</figcaption></figure>
-        <figure><img src="15grms-complete.webp" alt="15GRMS brew complete screen with rating, taste tags and a grind suggestion" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Complete</figcaption></figure>
-        <figure><img src="15grms-journal.webp" alt="15GRMS journal entry with rating, taste tags and notes" loading="lazy" decoding="async" width="600" height="1224" style="aspect-ratio: 600 / 1224;"><figcaption>Journal</figcaption></figure>
-      </div>
-      <div>
-        <div class="story-row">
-          <p class="story-label">The Problem</p>
-          <p class="story-statement">Recipes are scattered. Adjusting them is a nightmare.</p>
-          <p class="story-detail">Coffee brewing knowledge lives across YouTube videos and blog posts with no standardization. When you want to scale a recipe or tweak a ratio for a different brew method, you are on your own with a calculator.</p>
-        </div>
-        <div class="story-row">
-          <p class="story-label">The Insight</p>
-          <p class="story-statement">Precision brewing shouldn&#8217;t require expertise. Just good tools.</p>
-          <p class="story-detail">A structured recipe library with dynamic ratio calculation, guided brew timers, and method-specific recommendations could turn any home brewer into a consistent one.</p>
-        </div>
-        <div class="story-row">
-          <p class="story-label">The Prototype</p>
-          <p class="story-statement">Guided recipes, precision ratios, and a step-by-step brew timer, in one app.</p>
-          <p class="story-detail">Built with Claude; landing animation crafted with Kling AI. Covers V60, AeroPress, and Cold Brew with curated recipes from competition winners and specialty coffee experts. Includes a ratio calculator, guided timer, and a curated bean shop.</p>
-        </div>
-        <div class="story-row">
-          <p class="story-label">The Takeaway</p>
-          <p class="story-statement">The best recipe tool isn&#8217;t the one with the most recipes; it&#8217;s the one you actually follow.</p>
-          <p class="story-detail">Structured step-by-step guidance with a built-in timer changes behavior in a way that a static recipe page never does. The product isn&#8217;t the information; it&#8217;s the workflow.</p>
-        </div>
-      </div>
-      <div class="cs-next">
         <a class="pill next-btn" href="#sundayatlas" data-next="sundayatlas"><span class="next-word">Next</span><span>01 SundayAtlas</span><span aria-hidden="true">&#8594;</span></a>
       </div>
     </article>
@@ -1049,7 +1096,8 @@
 (function () {
   'use strict';
 
-  var IDS = ['sundayatlas', 'signal', 'jobagent', 'rise', '15grms'];
+  /* Reading order, which is also the numbering shown on the cards. */
+  var IDS = ['sundayatlas', '15grms', 'signal', 'jobagent', 'rise'];
   var panel = document.querySelector('[data-drawer]');
   var overlay = document.querySelector('[data-overlay]');
   var closeBtn = panel ? panel.querySelector('[data-close]') : null;
@@ -1262,8 +1310,7 @@
        the whole field. Updating them on scroll was the cause of the
        reported stutter: confirmed by A/B on the owner's hardware, where
        freezing these alone made scrolling smooth while blur(34px), the
-       omAmbient animation and all five glass surfaces stayed at full
-       strength.
+       omAmbient animation and every glass surface stayed at full strength.
 
        (0, -60px) is the design's resting position, what the reference
        shows at the top of the page. Do not drive these from scroll again.
