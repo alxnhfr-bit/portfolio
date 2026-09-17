@@ -70,7 +70,7 @@ animation: omAmbient 30s ease-in-out infinite alternate;
 ```
 `.page` carries `position: relative; isolation: isolate` so the layer can sit at `z-index: -1` and still paint above the wrapper's own `#fcfcfb`. `isolation` does **not** create a containing block for `position: fixed`, so the drawer still resolves against the viewport from inside it.
 
-**Ambient light field (dark band)** - the Agents band is opaque `#17171a`, so it gets its own `.band-ambient` (`position: absolute; inset: -20%; z-index: -1`, three gradients, `blur(36px)`, `omAmbient 34s`). The band carries `position: relative; isolation: isolate; overflow: hidden`.
+**Ambient light field (dark band)** - the band that carries the 15GRMS flagship is opaque `#17171a`, so it gets its own `.band-ambient` (`position: absolute; inset: -20%; z-index: -1`, three gradients, `blur(36px)`, `omAmbient 34s`). The band carries `position: relative; isolation: isolate; overflow: hidden`.
 
 **Glass surface (light)** - `.glass`, four background layers in this order: the pointer-tracked specular, the body wash, a top-left lens, a bottom shade. Then `backdrop-filter: blur(30px) saturate(205%) brightness(1.04)` and a six-layer inset shadow (bright top rim, hairline rim all round, light gathering at the left and right edges, soft bottom shade, outer cast). **Dark variant** `.glass-dark` is the same structure with low-alpha white instead of tint, `saturate(165%) brightness(1.06)`, and a black-based shadow stack.
 
@@ -78,7 +78,7 @@ animation: omAmbient 30s ease-in-out infinite alternate;
 
 **Pointer specular** - two delegated listeners on `document`, both `{ passive: true }`. A glass element opts in by carrying `data-glass`, and declares its own `--mx: 50%; --my: -8%; --spec: 0`.
 
-**The two Agents tiles deliberately do NOT carry `data-glass`** (owner request, 2026-09-17): against the dark glass the white specular read as a smudge trailing the cursor. Dropping the attribute stops the tracking while leaving the resting highlight the material declares, so the card looks exactly as it does with the pointer away. `data-glass` is on the flagship, Rise and 15GRMS only. Do not re-add it to Signal or JobAgent.
+**Signal, JobAgent and the 15GRMS band deliberately do NOT carry `data-glass`** (owner request, 2026-09-17): against the dark glass the white specular read as a smudge trailing the cursor. Dropping the attribute stops the tracking while leaving the resting highlight the material declares, so the card looks exactly as it does with the pointer away. `data-glass` is on the SundayAtlas flagship and Rise ONLY. The 15GRMS band was added to the opt-out list when it moved to dark glass, since that is the exact surface the complaint was about. Known inconsistency, flagged and left alone deliberately: Signal and JobAgent are now light glass sitting beside Rise in the same slider, and Rise still tracks the pointer while they do not. Removing tracking from them was an explicit instruction, so it was not quietly reversed. Fix it in either direction on request.
 - `pointermove` finds `e.target.closest('[data-glass]')`, computes the cursor as a percentage of the element's box, and writes `--mx`, `--my`, `--spec: 1`.
 - `pointerout` ignores the event if `e.relatedTarget` is still inside the element; otherwise it eases back to rest over 520ms with `1 - (1-k)^3`, driven by `requestAnimationFrame`. **Custom properties cannot transition without `@property`**, which is why this lerp is written by hand.
 
@@ -115,11 +115,18 @@ Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately 
 - **Flagships** (SundayAtlas and 15GRMS), stage `clamp(320px, 38vw, 540px)`, screens `clamp(132px, 14.5vw, 204px)`. SundayAtlas at `600/1304`: extract (mt 64, mr -24, z1), trips (mt 32, mr -24, z2), landing (z3), itinerary (mt 32, ml -24, z2), creators (mt 64, ml -24, z1)
 - 15GRMS uses the same flagship fan at `600/1224`, via `class="shot shot--flagship ar-brew"`: `.ar-brew` is declared after `.shot--flagship` so it wins the aspect-ratio. Order: journal (mt 64, mr -24, z1), complete (mt 32, mr -24, z2), brew (z3), recipe (mt 32, ml -24, z2), brewing (mt 64, ml -24, z1)
 - **Prototypes** (Rise only, since 15GRMS was promoted), stage `clamp(220px, 24vw, 320px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). **The stage height is deliberately identical to the Agents stage** so the two chapters' cards match; keep them in sync.
-- **Agents** (Signal, JobAgent) have no screenshots. Each shows its pipeline as a stack of glass cards joined by 1px x 14px connectors, in a `clamp(220px, 24vw, 320px)` container faded out with `mask-image: linear-gradient(to bottom, #000 74%, transparent 100%)`
+- **Signal and JobAgent** have no screenshots. Each shows its pipeline as a stack of cards joined by 1px x 14px connectors, in a `clamp(220px, 24vw, 320px)` container faded out with `mask-image: linear-gradient(to bottom, #000 74%, transparent 100%)`. Since they moved into the light Experiments slider, `.node` is the light treatment (`linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,255,255,0.62))`, ink label, `--text-2` body, `rgba(23,23,26,0.25)` connectors). `.node--dark` stays dark for JobAgent's emphasised "3 . Score" card.
+
+### The Experiments slider
+`.slider` is `grid-auto-flow: column` with `grid-auto-columns: minmax(320px, 1fr)` and `overflow-x: auto`. **No width breakpoint is involved and none should be added:** three cards fill the row while each still fits, and the 320px floor forces overflow and snap-scrolling on its own at roughly 1050px of viewport. Measured: no scroll at 1440, scrolls at 768 (1046px of content) and 390 (1032px).
+
+Two details are load-bearing. `overflow-x: auto` computes `overflow-y` to `auto` as well, so the slider carries block padding with a matching negative block margin, or it clips the cards' hover lift and drop shadows. The inline padding/negative-margin pair does the same job horizontally, letting cards scroll out to the page edge rather than stopping at the gutter, without widening the page (verified: no horizontal overflow at any width).
+
+`.tile-text` carries `margin-top: auto` so that when the grid stretches every card to the tallest, the slack lands in the open glass above the title row rather than under the text.
 
 **Gutters are identical for all five cards (owner request, 2026-09-17).** The reference had the flagship full-bleed, edge to edge, while the four chapter cards sat inside `.container`. The flagship is now inset to match, via `width: calc(min(100%, 1560px) - 2 * var(--pad-x))` plus `margin-inline: auto` on `.flagship` itself. That reproduces the container geometry without a wrapper, so the markup stays flat and the flagship keeps its own stacking. Because of it, `.flagship-title` must NOT re-apply `max-width`/`--pad-x` (that would double the inset); it is a plain `width: 100%`, and its `.tile-text` takes the same `clamp(20px, 2.5vw, 32px)` internal padding as the other cards, which also lines its title up with the Signal and Rise titles. Measured equal at 390, 768, 1440 and 1920. Side effect worth knowing: the flagship is now `2 * --pad-x` narrower, so the five-phone fan crops slightly earlier than before.
 
-**Card heights across chapters (owner request, 2026-09-17).** Matching the stage heights was not enough: the long Agents taglines push their status row onto a line of its own, while the short Prototype taglines let it sit beside them, leaving the cards 28px apart. `.tile--light .tile-left { flex: 1 1 100% }` forces the same wrap on the two Prototype cards only, so the Agents cards and the flagship are untouched. Measured result: all four cards are exactly 462px at 1280px and wider. Below that the Agents taglines wrap to two or three lines and the Agents cards run 22px taller (43px at 390px), which was accepted rather than restyling all five cards. Fixing it everywhere would need the status row forced onto its own line on every card plus a two-line tagline reserve, which makes the Agents cards taller and changes the approved layout.
+**Card heights.** No longer a special case. Signal, JobAgent and Rise share one grid row in the slider, so they stretch to a common height automatically (measured 484px each at 1440). The old `.tile--light .tile-left { flex: 1 1 100% }` hack, which forced a matching status-row wrap so two separate grids would agree, has been REMOVED as obsolete.
 
 **Images must keep `height: auto` in CSS.** They carry `width`/`height` attributes for CLS, and without `height: auto` that HTML `height` attribute (a presentational hint) beats `aspect-ratio` and the phones render full-height and hugely zoomed.
 
@@ -153,27 +160,27 @@ Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately 
 
   main
     div.work
-      Chapter "Shipped"          TWO flagship bands, equal billing
+      Chapter "Shipped"          TWO flagship bands, deliberately unalike
         - label inside .container
-        - a.flagship.glass x2, siblings of .container in the markup but
-          inset to match every other card (see below), each
-          min-height min(86vh, 900px), column with space-between:
-            cue-wrap (flex:1) / 5 screens / title row
-            01 SundayAtlas  Live . Flagship   (scroll cue in the cue-wrap)
-            02 15GRMS       Live . App Store  (cue-wrap left empty: the
-                                               cue only belongs on the
-                                               first thing you see)
-          .flagship + .flagship { margin-top: 20px } matches the grid gap.
+        - 01 SundayAtlas  a.flagship.glass on the page background
+                          Live . Flagship, scroll cue in its cue-wrap
+        - 02 15GRMS       a.flagship.glass-dark.tile--dark, wrapped in
+                          .band so it sits on #17171a with its own
+                          .band-ambient. Live . App Store. Its cue-wrap is
+                          left EMPTY: the cue only belongs on the first
+                          thing you see.
+          Both are min-height min(86vh, 900px), column with
+          space-between: cue-wrap (flex:1) / 5 screens / title row.
+          Two white bands stacked read as one thing, which is why the
+          second one is dark (owner request, 2026-09-17).
 
-      Chapter "Agents"  (.band, full-width #17171a)
-        - .band-ambient, its own light field
-        - 2-up grid of dark glass tiles:
+      Chapter "Experiments"      the old Agents and Prototypes, merged
+        - .slider, three LIGHT glass cards side by side:
             03 Signal    Live . Runs weekly (eval-loop stack)
             04 JobAgent  Live . Runs daily  (daily-pipeline stack, dark "3 . Score" card)
-
-      Chapter "Prototypes"
-        - grid of light glass tiles, currently ONE:
-            05 Rise    Prototype  (3 screens)
+            05 Rise      Prototype          (3 screens)
+          Signal and JobAgent moved off the dark band, so their pipeline
+          cards are now the LIGHT .node treatment.
 
     div.drawer-overlay
 
@@ -278,7 +285,6 @@ Surface-count note, since the wrong number circulated for a while: the "21 backd
 - **`og:image` is still missing**, so shared links render a text-only card. A 1200x630 social image is the remaining SEO task.
 - **`<title>` and `og:title` still say "Product Builder"** even though the hero role line was dropped. Kept deliberately because the existing head meta and OG tags had to be preserved.
 - **Signal has no repo link.** If the repo is made public, add a live link to the Signal case-study head like the other projects have.
-- **A lone card stretches its grid.** Prototypes now holds only Rise, and `grid--proto` is `auto-fit`, so that card runs the full 1360px content width at 1440px with three ~160px phones centred in it. Measured, not yet judged visually: the preview pane stopped compositing. If it reads as too sparse, cap it (`.grid--proto > :only-child { max-width: calc(50% - 10px) }`) or give Prototypes a second card.
 - 15GRMS home screen says "The Adler Original" while the recipe and journal screens say "The Hoffmann Method". The story copy itself was rewritten from the app README on 17 September 2026 and now matches the shipped product.
 - **Not yet checked in Safari.** All 7 `backdrop-filter` declarations carry `-webkit-backdrop-filter`, but the glass has only been verified in the Chromium-based preview.
 

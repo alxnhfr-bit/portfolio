@@ -210,10 +210,31 @@
   /* ---------- Chapters ---------- */
   .work { padding-bottom: clamp(64px, 8vw, 112px); }
   .chapter { font-size: 13px; font-weight: 500; color: var(--ink); padding: 0 0 22px; }
-  .chapter--dark { color: var(--on-dark); }
-  .grid { display: grid; gap: 20px; }
-  .grid--agents { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
-  .grid--proto { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+
+  /* ---------- The Experiments slider ----------
+     Three cards side by side while they each still fit, then a
+     snap-scrolling row. No breakpoint is needed: the 320px floor on
+     grid-auto-columns forces overflow on its own once three of them plus
+     the gaps exceed the container, at roughly 1050px of viewport.
+
+     The block padding with matching negative margin is load-bearing:
+     overflow-x: auto computes overflow-y to auto as well, which would
+     otherwise clip the cards' hover lift and their drop shadows. The
+     inline version does the same job horizontally, letting cards scroll
+     out to the page edge instead of stopping at the gutter. */
+  .slider {
+    display: grid; grid-auto-flow: column;
+    grid-auto-columns: minmax(320px, 1fr);
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--pad-x);
+    scrollbar-width: none;
+    padding: 10px var(--pad-x) 30px;
+    margin: -10px calc(-1 * var(--pad-x)) -30px;
+  }
+  .slider::-webkit-scrollbar { display: none; }
+  .slider > * { scroll-snap-align: start; }
 
   /* ---------- Chapter: Shipped (two flagship bands) ---------- */
   .flagship {
@@ -221,23 +242,29 @@
     min-height: min(86vh, 900px);
     border-radius: clamp(28px, 3vw, 44px); overflow: hidden;
     color: var(--ink); text-decoration: none;
-    /* Inset to sit flush with the Agents and Prototypes cards. This
-       reproduces the .container geometry (1560px cap, --pad-x sides)
-       without needing a wrapper, so the markup stays flat. The reference
-       had this band full-bleed; insetting it was an owner request. */
+    /* Inset to sit flush with the slider cards. This reproduces the
+       .container geometry (1560px cap, --pad-x sides) without needing a
+       wrapper, so the markup stays flat. The reference had this band
+       full-bleed; insetting it was an owner request. */
     width: calc(min(100%, 1560px) - 2 * var(--pad-x));
     margin-inline: auto;
   }
-  /* Two shipped products share this chapter, so the second band needs the
-     same separation the grids use between cards. */
-  .flagship + .flagship { margin-top: 20px; }
-  /* The band is near full screen, so it brightens in place instead of lifting. */
+  /* Both bands are near full screen, so they brighten in place instead of
+     lifting: a 900px box sliding 4px reads as a glitch. */
   .flagship:hover {
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.95),
       inset 0 0 0 1px rgba(255,255,255,0.55),
       inset 0 -18px 40px -28px rgba(23,23,26,0.16),
       0 38px 68px -46px rgba(23,23,26,0.42);
+  }
+  .flagship.glass-dark:hover {
+    transform: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.26),
+      inset 0 0 0 1px rgba(255,255,255,0.18),
+      inset 0 -26px 50px -34px rgba(0,0,0,0.5),
+      0 40px 72px -44px rgba(0,0,0,0.7);
   }
 
   @keyframes omDrift {
@@ -263,14 +290,18 @@
   }
   /* The flagship is inset like every other card now, so this no longer
      re-applies the container geometry (that would double the inset). The
-     title row just takes the same internal padding the other cards use,
-     so its text lines up with the Signal and Rise titles. */
+     title row just takes the same internal padding the cards use. */
   .flagship-title { width: 100%; }
   .flagship-title .tile-text { padding: 8px clamp(20px, 2.5vw, 32px) clamp(28px, 3vw, 44px); background: none; }
+  /* The dark band DOES get a legibility plate, unlike the light flagship:
+     its title sits over a coloured ambient field rather than near-white. */
+  .flagship.tile--dark .tile-text {
+    background: linear-gradient(to top, rgba(10,10,12,0.62) 0%, rgba(10,10,12,0.28) 58%, transparent 100%);
+  }
 
-  /* ---------- Chapter: Agents (dark band) ----------
-     isolation:isolate scopes the dark tiles' backdrop root to the band, and
-     overflow:hidden bounds .band-ambient's -20% outset. Leave both alone. */
+  /* ---------- The dark band (now carries the 15GRMS flagship) ----------
+     isolation:isolate scopes the dark glass's backdrop root to the band,
+     and overflow:hidden bounds .band-ambient's -20% outset. Leave both. */
   .band {
     background: var(--ink); color: var(--on-dark);
     margin: clamp(56px, 7vw, 104px) 0; padding: clamp(48px, 6vw, 88px) 0;
@@ -291,18 +322,11 @@
       inset 0 -26px 50px -34px rgba(23,23,26,0.18),
       0 40px 72px -46px rgba(23,23,26,0.42);
   }
-  .glass-dark:hover {
-    transform: translateY(-4px);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.26),
-      inset 0 0 0 1px rgba(255,255,255,0.18),
-      0 40px 72px -44px rgba(0,0,0,0.7);
-  }
 
   /* Screen compositions. Phones are cropped by the stage's bottom edge. */
   .stage { overflow: hidden; display: flex; justify-content: center; align-items: flex-start; }
-  /* Deliberately the same height as .stage--diagram, so the Prototype
-     cards match the Agents cards. Keep the two in sync if either moves. */
+  /* Deliberately the same height as .stage--diagram, so the three slider
+     cards line up. Keep the two in sync if either moves. */
   .stage--small { height: clamp(220px, 24vw, 320px); padding-top: clamp(28px, 4vw, 48px); }
 
   .shot {
@@ -335,40 +359,40 @@
     mask-image: linear-gradient(to bottom, #000 74%, transparent 100%);
   }
   .flow { width: min(100%, 320px); display: flex; flex-direction: column; align-items: stretch; }
-  /* No backdrop-filter here on purpose. The mask above and the tile's own
-     backdrop-filter each establish a backdrop root, so these cards had
-     nothing to blur: verified identical in a same-frame A/B against the
-     unmodified neighbouring tile. Adding one back costs 8 render surfaces
-     and 8 GPU passes per frame for no visible change. */
+  /* Light diagram cards, since Signal and JobAgent now sit on the page
+     background rather than the dark band. No backdrop-filter on purpose:
+     the mask above and the tile's own backdrop-filter each establish a
+     backdrop root, so these cards have nothing to blur, and adding one
+     costs 8 render surfaces and 8 GPU passes per frame for no change. */
   .node {
-    background: linear-gradient(160deg, rgba(255,255,255,0.11), rgba(255,255,255,0.05));
-    border: 1px solid rgba(255,255,255,0.16); border-radius: 14px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,255,255,0.62));
+    border: 1px solid rgba(255,255,255,0.7); border-radius: 14px;
     padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 12px 28px -18px rgba(0,0,0,0.5);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 28px -18px rgba(23,23,26,0.22);
   }
   .node--dark {
     background: linear-gradient(160deg, rgba(23,23,26,0.95), rgba(23,23,26,0.82));
-    border-color: rgba(255,255,255,0.14);
+    border-color: rgba(23,23,26,0.14);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 12px 28px -18px rgba(23,23,26,0.35);
   }
-  .node-label { font-size: 12px; font-weight: 500; color: var(--on-dark); }
-  .node-text { font-size: 13px; color: var(--on-dark-2); line-height: 1.4; }
-  .conn { width: 1px; height: 14px; background: rgba(255,255,255,0.3); margin: 0 auto; }
+  .node-label { font-size: 12px; font-weight: 500; color: var(--ink); }
+  .node-text { font-size: 13px; color: var(--text-2); line-height: 1.4; }
+  .node--dark .node-label { color: var(--on-dark); }
+  .node--dark .node-text { color: var(--on-dark-2); }
+  .conn { width: 1px; height: 14px; background: rgba(23,23,26,0.25); margin: 0 auto; }
 
-  /* Legibility plate: the title row never depends on what is behind the glass. */
+  /* Legibility plate: the title row never depends on what is behind the glass.
+     margin-top:auto pins it to the bottom, so when the slider stretches
+     every card to the tallest one, the slack lands in the open glass
+     above rather than under the text. */
   .tile-text {
     display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
     gap: 12px 32px; padding: 16px clamp(20px, 2.5vw, 32px) clamp(24px, 2.5vw, 32px);
+    margin-top: auto;
   }
   .tile--light .tile-text { background: linear-gradient(to top, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.3) 58%, transparent 100%); }
   .tile--dark .tile-text { background: linear-gradient(to top, rgba(10,10,12,0.62) 0%, rgba(10,10,12,0.28) 58%, transparent 100%); }
   .tile-left { display: flex; flex-direction: column; gap: 8px; }
-  /* The Agents taglines are long enough to push their status row onto a
-     line of its own; the short Prototype taglines are not, which left the
-     two chapters' cards 28px apart. Forcing the same wrap here squares
-     them up without touching the Agents cards or the flagships. Paired
-     with .stage--small matching .stage--diagram above. */
-  .tile--light .tile-left { flex: 1 1 100%; }
   .tile-heading { display: flex; align-items: baseline; gap: 14px; }
   .tile-num { font-size: 13px; color: var(--text-3); }
   .tile--dark .tile-num { color: var(--on-dark-3); }
@@ -517,8 +541,6 @@
     background: #ffffff; border: 1px solid rgba(23,23,26,0.06); border-radius: 12px;
     padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
   }
-  .pnode .node-label { color: var(--ink); }
-  .pnode .node-text { color: var(--text-2); }
   .pnode--dark { background: var(--ink); border-color: var(--ink); }
   .pnode--dark .node-label { color: var(--on-dark); }
   .pnode--dark .node-text { color: var(--on-dark-2); }
@@ -564,6 +586,7 @@
     [data-cue] { animation: none !important; }
     .reveal { opacity: 1 !important; translate: none !important; }
     .glass:hover, .glass-dark:hover { transform: none; }
+    .slider { scroll-behavior: auto; }
   }
 </style>
 <noscript><style>
@@ -632,90 +655,83 @@
     </div>
   </a>
 
-  <a class="flagship glass" href="#15grms" data-open="15grms" data-glass data-reveal>
-    <div class="cue-wrap" aria-hidden="true"></div>
-    <div class="flagship-screens">
-      <img class="shot shot--flagship ar-brew p-far-l" src="15grms-journal.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
-      <img class="shot shot--flagship ar-brew p-near-l" src="15grms-complete.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
-      <img class="shot shot--flagship ar-brew p-mid" src="15grms-brew.webp" alt="15GRMS screens" loading="lazy" decoding="async" width="600" height="1224">
-      <img class="shot shot--flagship ar-brew p-near-r" src="15grms-recipe.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
-      <img class="shot shot--flagship ar-brew p-far-r" src="15grms-brewing.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
-    </div>
-    <div class="flagship-title">
-      <div class="tile-text">
-        <div class="tile-left">
-          <div class="tile-heading"><span class="tile-num">02</span><span class="tile-name">15GRMS</span></div>
-          <p class="tile-tagline">A coffee brewing companion for iPhone.</p>
-        </div>
-        <div class="tile-right">
-          <span class="status"><span class="dot"></span>Live &middot; App Store</span>
-          <span class="cs-cue">Case study</span>
-        </div>
-      </div>
-    </div>
-  </a>
-
   <div class="band" data-reveal>
     <div class="band-ambient" data-ambient="band" aria-hidden="true"></div>
-    <div class="container">
-      <p class="chapter chapter--dark">Agents</p>
-      <div class="grid grid--agents">
-
-        <a class="tile tile--dark glass-dark" href="#signal" data-open="signal" data-reveal>
-          <div class="stage--diagram">
-            <div class="flow">
-              <div class="node"><span class="node-label">1 &middot; Taxonomy</span><span class="node-text">Five closed labels, explicit precedence rules for ties</span></div>
-              <div class="conn" aria-hidden="true"></div>
-              <div class="node"><span class="node-label">2 &middot; Rubric</span><span class="node-text">One document: human labeling guide and classifier prompt spec</span></div>
-              <div class="conn" aria-hidden="true"></div>
-              <div class="node"><span class="node-label">3 &middot; Golden set</span><span class="node-text">Blind-labeled before seeing any prediction</span></div>
-              <div class="conn" aria-hidden="true"></div>
-              <div class="node"><span class="node-label">4 &middot; Harness</span><span class="node-text">Deterministic Python scoring, no LLM judge</span></div>
-            </div>
-          </div>
-          <div class="tile-text">
-            <div class="tile-left">
-              <div class="tile-heading"><span class="tile-num">03</span><span class="tile-name">Signal</span></div>
-              <p class="tile-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
-            </div>
-            <div class="tile-right">
-              <span class="status"><span class="dot"></span>Live &middot; Runs weekly</span>
-              <span class="cs-cue">Case study</span>
-            </div>
-          </div>
-        </a>
-
-        <a class="tile tile--dark glass-dark" href="#jobagent" data-open="jobagent" data-reveal>
-          <div class="stage--diagram">
-            <div class="flow">
-              <div class="node"><span class="node-label">1 &middot; Sources</span><span class="node-text">Twenty careers pages, collected every morning</span></div>
-              <div class="conn" aria-hidden="true"></div>
-              <div class="node"><span class="node-label">2 &middot; Pre-filter</span><span class="node-text">Title, level, and location</span></div>
-              <div class="conn" aria-hidden="true"></div>
-              <div class="node node--dark"><span class="node-label">3 &middot; Score</span><span class="node-text">Claude as the scoring layer, against a written rubric</span></div>
-              <div class="conn" aria-hidden="true"></div>
-              <div class="node"><span class="node-label">4 &middot; Dedupe</span><span class="node-text">Deduplication across sources</span></div>
-            </div>
-          </div>
-          <div class="tile-text">
-            <div class="tile-left">
-              <div class="tile-heading"><span class="tile-num">04</span><span class="tile-name">JobAgent</span></div>
-              <p class="tile-tagline">The same agent, built twice, to find out what the platform costs you.</p>
-            </div>
-            <div class="tile-right">
-              <span class="status"><span class="dot"></span>Live &middot; Runs daily</span>
-              <span class="cs-cue">Case study</span>
-            </div>
-          </div>
-        </a>
-
+    <a class="flagship glass-dark tile--dark" href="#15grms" data-open="15grms" data-reveal>
+      <div class="cue-wrap" aria-hidden="true"></div>
+      <div class="flagship-screens">
+        <img class="shot shot--flagship ar-brew p-far-l" src="15grms-journal.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+        <img class="shot shot--flagship ar-brew p-near-l" src="15grms-complete.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+        <img class="shot shot--flagship ar-brew p-mid" src="15grms-brew.webp" alt="15GRMS screens" loading="lazy" decoding="async" width="600" height="1224">
+        <img class="shot shot--flagship ar-brew p-near-r" src="15grms-recipe.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
+        <img class="shot shot--flagship ar-brew p-far-r" src="15grms-brewing.webp" alt="" loading="lazy" decoding="async" width="600" height="1224">
       </div>
-    </div>
+      <div class="flagship-title">
+        <div class="tile-text">
+          <div class="tile-left">
+            <div class="tile-heading"><span class="tile-num">02</span><span class="tile-name">15GRMS</span></div>
+            <p class="tile-tagline">A coffee brewing companion for iPhone.</p>
+          </div>
+          <div class="tile-right">
+            <span class="status"><span class="dot"></span>Live &middot; App Store</span>
+            <span class="cs-cue">Case study</span>
+          </div>
+        </div>
+      </div>
+    </a>
   </div>
 
   <div class="container">
-    <p class="chapter">Prototypes</p>
-    <div class="grid grid--proto">
+    <p class="chapter">Experiments</p>
+    <div class="slider">
+
+      <a class="tile tile--light glass" href="#signal" data-open="signal" data-reveal>
+        <div class="stage--diagram">
+          <div class="flow">
+            <div class="node"><span class="node-label">1 &middot; Taxonomy</span><span class="node-text">Five closed labels, explicit precedence rules for ties</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="node"><span class="node-label">2 &middot; Rubric</span><span class="node-text">One document: human labeling guide and classifier prompt spec</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="node"><span class="node-label">3 &middot; Golden set</span><span class="node-text">Blind-labeled before seeing any prediction</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="node"><span class="node-label">4 &middot; Harness</span><span class="node-text">Deterministic Python scoring, no LLM judge</span></div>
+          </div>
+        </div>
+        <div class="tile-text">
+          <div class="tile-left">
+            <div class="tile-heading"><span class="tile-num">03</span><span class="tile-name">Signal</span></div>
+            <p class="tile-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
+          </div>
+          <div class="tile-right">
+            <span class="status"><span class="dot"></span>Live &middot; Runs weekly</span>
+            <span class="cs-cue">Case study</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile tile--light glass" href="#jobagent" data-open="jobagent" data-reveal>
+        <div class="stage--diagram">
+          <div class="flow">
+            <div class="node"><span class="node-label">1 &middot; Sources</span><span class="node-text">Twenty careers pages, collected every morning</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="node"><span class="node-label">2 &middot; Pre-filter</span><span class="node-text">Title, level, and location</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="node node--dark"><span class="node-label">3 &middot; Score</span><span class="node-text">Claude as the scoring layer, against a written rubric</span></div>
+            <div class="conn" aria-hidden="true"></div>
+            <div class="node"><span class="node-label">4 &middot; Dedupe</span><span class="node-text">Deduplication across sources</span></div>
+          </div>
+        </div>
+        <div class="tile-text">
+          <div class="tile-left">
+            <div class="tile-heading"><span class="tile-num">04</span><span class="tile-name">JobAgent</span></div>
+            <p class="tile-tagline">The same agent, built twice, to find out what the platform costs you.</p>
+          </div>
+          <div class="tile-right">
+            <span class="status"><span class="dot"></span>Live &middot; Runs daily</span>
+            <span class="cs-cue">Case study</span>
+          </div>
+        </div>
+      </a>
 
       <a class="tile tile--light glass" href="#rise" data-open="rise" data-glass data-reveal>
         <div class="stage stage--small">
