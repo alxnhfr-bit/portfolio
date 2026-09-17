@@ -76,11 +76,11 @@ animation: omAmbient 30s ease-in-out infinite alternate;
 
 **Hover** - small tiles lift (`translateY(-4px)`) and the rim brightens. The flagship band deliberately does **not** lift, only brightens; it is near full screen, so a lift reads as a glitch. This matches the reference.
 
-**Pointer specular** - two delegated listeners on `document`, both `{ passive: true }`. A glass element opts in by carrying `data-glass`, and declares its own `--mx: 50%; --my: -8%; --spec: 0`.
+**Pointer specular: REMOVED (owner request, 2026-09-17).** The first background layer of `.glass` / `.glass-dark` used to follow the cursor, driven by two delegated `pointermove` / `pointerout` listeners writing `--mx`, `--my` and `--spec`, with a hand-written 520ms rAF lerp back to rest (custom properties cannot transition without `@property`). All of it is gone, and the `data-glass` opt-in hooks went with it: no element carries one, and no JS writes those properties.
 
-**Signal, JobAgent and the 15GRMS band deliberately do NOT carry `data-glass`** (owner request, 2026-09-17): against the dark glass the white specular read as a smudge trailing the cursor. Dropping the attribute stops the tracking while leaving the resting highlight the material declares, so the card looks exactly as it does with the pointer away. `data-glass` is on the SundayAtlas flagship and Rise ONLY. The 15GRMS band was added to the opt-out list when it moved to dark glass, since that is the exact surface the complaint was about. Known inconsistency, flagged and left alone deliberately: Signal and JobAgent are now light glass sitting beside Rise in the same slider, and Rise still tracks the pointer while they do not. Removing tracking from them was an explicit instruction, so it was not quietly reversed. Fix it in either direction on request.
-- `pointermove` finds `e.target.closest('[data-glass]')`, computes the cursor as a percentage of the element's box, and writes `--mx`, `--my`, `--spec: 1`.
-- `pointerout` ignores the event if `e.relatedTarget` is still inside the element; otherwise it eases back to rest over 520ms with `1 - (1-k)^3`, driven by `requestAnimationFrame`. **Custom properties cannot transition without `@property`**, which is why this lerp is written by hand.
+**The gradient layer itself STAYS**, at the resting values still declared on `.glass` and `.glass-dark` (`--mx: 50%; --my: -8%; --spec: 0`). It is one of the four layers that make the glass read as glass, and deleting it flattens every card. Keep those declarations; the gradients resolve against them.
+
+The history, so it is not relitigated: the complaint was that against the dark Agents cards the white highlight read as a smudge trailing the cursor. It came off those two first, then off the 15GRMS band when that moved to dark glass, then off everything. To restore it, re-add the two listeners and the `data-glass` attributes. Nothing in the material needs to change.
 
 **Ambient light position** - `--lx` / `--ly` are written **once at mount**, to the design's resting values (`0px`, `-60px`), on the `[data-ambient]` elements. They are never updated afterwards.
 
@@ -141,7 +141,7 @@ Two details are load-bearing. `overflow-x: auto` computes `overflow-y` to `auto`
 `<meta name="color-scheme" content="light only">` plus a `@media (prefers-color-scheme: dark)` block that pins `background-color`/`color` on `html`, `body`, `.page` and the drawer so OS dark mode cannot invert the palette.
 
 ### Reduced motion
-`@media (prefers-reduced-motion: reduce)` collapses animation and transition durations, kills `[data-ambient]` and `[data-cue]` outright, forces revealed elements visible, and drops the hover lift. The JS also checks `matchMedia` and skips both the scroll drift and the reveal priming. **The pointer specular is allowed to stay** (it is a direct response to input, not ambient motion).
+`@media (prefers-reduced-motion: reduce)` collapses animation and transition durations, kills `[data-ambient]` and `[data-cue]` outright, forces revealed elements visible, and drops the hover lift. The JS also checks `matchMedia` and skips both the scroll drift and the reveal priming. (There is no longer a pointer specular to exempt here; see the material section above.)
 
 ## Page Structure
 
