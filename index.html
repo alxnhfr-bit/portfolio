@@ -221,6 +221,12 @@
     min-height: min(86vh, 900px);
     border-radius: clamp(28px, 3vw, 44px); overflow: hidden;
     color: var(--ink); text-decoration: none;
+    /* Inset to sit flush with the Agents and Prototypes cards. This
+       reproduces the .container geometry (1560px cap, --pad-x sides)
+       without needing a wrapper, so the markup stays flat. The reference
+       had this band full-bleed; insetting it was an owner request. */
+    width: calc(min(100%, 1560px) - 2 * var(--pad-x));
+    margin-inline: auto;
   }
   /* The band is near full screen, so it brightens in place instead of lifting. */
   .flagship:hover {
@@ -250,8 +256,12 @@
     height: clamp(320px, 38vw, 540px); overflow: hidden;
     display: flex; justify-content: center; align-items: flex-start;
   }
-  .flagship-title { max-width: 1560px; width: 100%; margin: 0 auto; padding: 0 var(--pad-x); }
-  .flagship-title .tile-text { padding: 8px 0 clamp(28px, 3vw, 44px); background: none; }
+  /* The flagship is inset like every other card now, so this no longer
+     re-applies the container geometry (that would double the inset). The
+     title row just takes the same internal padding the other cards use,
+     so its text lines up with the Signal and Rise titles. */
+  .flagship-title { width: 100%; }
+  .flagship-title .tile-text { padding: 8px clamp(20px, 2.5vw, 32px) clamp(28px, 3vw, 44px); background: none; }
 
   /* ---------- Chapter: Agents (dark band) ----------
      isolation:isolate scopes the dark tiles' backdrop root to the band, and

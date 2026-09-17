@@ -116,6 +116,8 @@ Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately 
 - **Prototypes** (Rise, 15GRMS), stage `clamp(220px, 24vw, 320px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). **The stage height is deliberately identical to the Agents stage** so the two chapters' cards match; keep them in sync.
 - **Agents** (Signal, JobAgent) have no screenshots. Each shows its pipeline as a stack of glass cards joined by 1px x 14px connectors, in a `clamp(220px, 24vw, 320px)` container faded out with `mask-image: linear-gradient(to bottom, #000 74%, transparent 100%)`
 
+**Gutters are identical for all five cards (owner request, 2026-09-17).** The reference had the flagship full-bleed, edge to edge, while the four chapter cards sat inside `.container`. The flagship is now inset to match, via `width: calc(min(100%, 1560px) - 2 * var(--pad-x))` plus `margin-inline: auto` on `.flagship` itself. That reproduces the container geometry without a wrapper, so the markup stays flat and the flagship keeps its own stacking. Because of it, `.flagship-title` must NOT re-apply `max-width`/`--pad-x` (that would double the inset); it is a plain `width: 100%`, and its `.tile-text` takes the same `clamp(20px, 2.5vw, 32px)` internal padding as the other cards, which also lines its title up with the Signal and Rise titles. Measured equal at 390, 768, 1440 and 1920. Side effect worth knowing: the flagship is now `2 * --pad-x` narrower, so the five-phone fan crops slightly earlier than before.
+
 **Card heights across chapters (owner request, 2026-09-17).** Matching the stage heights was not enough: the long Agents taglines push their status row onto a line of its own, while the short Prototype taglines let it sit beside them, leaving the cards 28px apart. `.tile--light .tile-left { flex: 1 1 100% }` forces the same wrap on the two Prototype cards only, so the Agents cards and the flagship are untouched. Measured result: all four cards are exactly 462px at 1280px and wider. Below that the Agents taglines wrap to two or three lines and the Agents cards run 22px taller (43px at 390px), which was accepted rather than restyling all five cards. Fixing it everywhere would need the status row forced onto its own line on every card plus a two-line tagline reserve, which makes the Agents cards taller and changes the approved layout.
 
 **Images must keep `height: auto` in CSS.** They carry `width`/`height` attributes for CLS, and without `height: auto` that HTML `height` attribute (a presentational hint) beats `aspect-ratio` and the phones render full-height and hugely zoomed.
@@ -152,11 +154,10 @@ Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately 
     div.work
       Chapter "Shipped"
         - label inside .container
-        - a.flagship.glass  OUTSIDE the container, full-bleed but rounded,
+        - a.flagship.glass  still a sibling of .container in the markup,
+          but inset to match every other card (see below),
           min-height min(86vh, 900px), column with space-between:
             scroll cue (flex:1, pinned bottom) / 5 screens / title row
-            (the title row is re-wrapped in a 1560px container so it
-             aligns with the rest of the page)
 
       Chapter "Agents"  (.band, full-width #17171a)
         - .band-ambient, its own light field
