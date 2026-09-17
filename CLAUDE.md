@@ -76,7 +76,9 @@ animation: omAmbient 30s ease-in-out infinite alternate;
 
 **Hover** - small tiles lift (`translateY(-4px)`) and the rim brightens. The flagship band deliberately does **not** lift, only brightens; it is near full screen, so a lift reads as a glitch. This matches the reference.
 
-**Pointer specular** - two delegated listeners on `document`, both `{ passive: true }`. Each glass element is marked `data-glass` and declares its own `--mx: 50%; --my: -8%; --spec: 0`.
+**Pointer specular** - two delegated listeners on `document`, both `{ passive: true }`. A glass element opts in by carrying `data-glass`, and declares its own `--mx: 50%; --my: -8%; --spec: 0`.
+
+**The two Agents tiles deliberately do NOT carry `data-glass`** (owner request, 2026-09-17): against the dark glass the white specular read as a smudge trailing the cursor. Dropping the attribute stops the tracking while leaving the resting highlight the material declares, so the card looks exactly as it does with the pointer away. `data-glass` is on the flagship, Rise and 15GRMS only. Do not re-add it to Signal or JobAgent.
 - `pointermove` finds `e.target.closest('[data-glass]')`, computes the cursor as a percentage of the element's box, and writes `--mx`, `--my`, `--spec: 1`.
 - `pointerout` ignores the event if `e.relatedTarget` is still inside the element; otherwise it eases back to rest over 520ms with `1 - (1-k)^3`, driven by `requestAnimationFrame`. **Custom properties cannot transition without `@property`**, which is why this lerp is written by hand.
 
@@ -111,8 +113,10 @@ The reference drove them from scroll (`p = min(1, scrollY / (scrollHeight - inne
 ### Chapter compositions
 Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately cropped by its bottom edge. They overlap via negative margins and stack with z-index:
 - **Flagship** (SundayAtlas), stage `clamp(320px, 38vw, 540px)`, screens `clamp(132px, 14.5vw, 204px)` at `600/1304`: extract (mt 64, mr -24, z1), trips (mt 32, mr -24, z2), landing (z3), itinerary (mt 32, ml -24, z2), creators (mt 64, ml -24, z1)
-- **Prototypes** (Rise, 15GRMS), stage `clamp(200px, 20vw, 260px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1)
+- **Prototypes** (Rise, 15GRMS), stage `clamp(220px, 24vw, 320px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). **The stage height is deliberately identical to the Agents stage** so the two chapters' cards match; keep them in sync.
 - **Agents** (Signal, JobAgent) have no screenshots. Each shows its pipeline as a stack of glass cards joined by 1px x 14px connectors, in a `clamp(220px, 24vw, 320px)` container faded out with `mask-image: linear-gradient(to bottom, #000 74%, transparent 100%)`
+
+**Card heights across chapters (owner request, 2026-09-17).** Matching the stage heights was not enough: the long Agents taglines push their status row onto a line of its own, while the short Prototype taglines let it sit beside them, leaving the cards 28px apart. `.tile--light .tile-left { flex: 1 1 100% }` forces the same wrap on the two Prototype cards only, so the Agents cards and the flagship are untouched. Measured result: all four cards are exactly 462px at 1280px and wider. Below that the Agents taglines wrap to two or three lines and the Agents cards run 22px taller (43px at 390px), which was accepted rather than restyling all five cards. Fixing it everywhere would need the status row forced onto its own line on every card plus a two-line tagline reserve, which makes the Agents cards taller and changes the approved layout.
 
 **Images must keep `height: auto` in CSS.** They carry `width`/`height` attributes for CLS, and without `height: auto` that HTML `height` attribute (a presentational hint) beats `aspect-ratio` and the phones render full-height and hugely zoomed.
 

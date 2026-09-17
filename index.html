@@ -286,7 +286,9 @@
 
   /* Screen compositions. Phones are cropped by the stage's bottom edge. */
   .stage { overflow: hidden; display: flex; justify-content: center; align-items: flex-start; }
-  .stage--small { height: clamp(200px, 20vw, 260px); padding-top: clamp(28px, 4vw, 48px); }
+  /* Deliberately the same height as .stage--diagram, so the Prototype
+     cards match the Agents cards. Keep the two in sync if either moves. */
+  .stage--small { height: clamp(220px, 24vw, 320px); padding-top: clamp(28px, 4vw, 48px); }
 
   .shot {
     display: block; flex: 0 0 auto; height: auto; object-fit: cover; object-position: top;
@@ -344,6 +346,12 @@
   .tile--light .tile-text { background: linear-gradient(to top, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.3) 58%, transparent 100%); }
   .tile--dark .tile-text { background: linear-gradient(to top, rgba(10,10,12,0.62) 0%, rgba(10,10,12,0.28) 58%, transparent 100%); }
   .tile-left { display: flex; flex-direction: column; gap: 8px; }
+  /* The Agents taglines are long enough to push their status row onto a
+     line of its own; the short Prototype taglines are not, which left the
+     two chapters' cards 28px apart. Forcing the same wrap here squares
+     them up without touching the Agents cards or the flagship. Paired
+     with .stage--small matching .stage--diagram above. */
+  .tile--light .tile-left { flex: 1 1 100%; }
   .tile-heading { display: flex; align-items: baseline; gap: 14px; }
   .tile-num { font-size: 13px; color: var(--text-3); }
   .tile--dark .tile-num { color: var(--on-dark-3); }
@@ -613,7 +621,7 @@
       <p class="chapter chapter--dark">Agents</p>
       <div class="grid grid--agents">
 
-        <a class="tile tile--dark glass-dark" href="#signal" data-open="signal" data-glass data-reveal>
+        <a class="tile tile--dark glass-dark" href="#signal" data-open="signal" data-reveal>
           <div class="stage--diagram">
             <div class="flow">
               <div class="node"><span class="node-label">1 &middot; Taxonomy</span><span class="node-text">Five closed labels, explicit precedence rules for ties</span></div>
@@ -637,7 +645,7 @@
           </div>
         </a>
 
-        <a class="tile tile--dark glass-dark" href="#jobagent" data-open="jobagent" data-glass data-reveal>
+        <a class="tile tile--dark glass-dark" href="#jobagent" data-open="jobagent" data-reveal>
           <div class="stage--diagram">
             <div class="flow">
               <div class="node"><span class="node-label">1 &middot; Sources</span><span class="node-text">Twenty careers pages, collected every morning</span></div>
