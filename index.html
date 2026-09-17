@@ -21,13 +21,13 @@
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* Registered so a drift write dirties only the two layers that consume
+  /* Registered so a light write dirties only the two layers that consume
      it, instead of every element's inherited style. Because inherits is
      false, the JS must write on the ambient layers themselves, never on
      the root. The var(--lx, 0px) fallbacks below stay for Safari < 16.4,
      which has no @property and would otherwise have no initial value.
-     Do not put `transition: all` on the ambients: these are interpolable
-     now, and the drift would ease instead of tracking the scroll. */
+     These values are now written once at mount and never again: see the
+     comment above .ambient. */
   @property --lx { syntax: '<length>'; inherits: false; initial-value: 0px; }
   @property --ly { syntax: '<length>'; inherits: false; initial-value: 0px; }
 
@@ -71,10 +71,19 @@
 
   /* ---------- Ambient light field ----------
      The only color in the design. The glass picks it up through
-     backdrop-filter; --lx / --ly are written by the scroll handler.
-     The JS pauses these animations for the duration of a scroll gesture:
-     they are transform-only and cheap in themselves, but they change the
-     backdrop under every glass surface on every frame they run. */
+     backdrop-filter.
+
+     --lx / --ly are set ONCE at mount and never updated on scroll. They
+     sit inside radial-gradient() centre positions, and gradient positions
+     are not compositor-animatable: every write discarded this layer's
+     raster tiles and re-blurred the whole 128vw x 128vh field. Measured
+     on the owner's hardware by A/B toggling the live page, freezing these
+     was the single change that made scrolling smooth, with blur(34px),
+     the omAmbient animation and all five glass surfaces still at full
+     strength. Do not reintroduce scroll-driven drift through these
+     properties. If the effect is wanted back it has to be driven by
+     transform on split child layers, one per sign pair, so the work stays
+     on the compositor. */
   @keyframes omAmbient {
     0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
     50%  { transform: translate3d(2.5%, 2%, 0) scale(1.06); }
@@ -1217,11 +1226,38 @@
     window.addEventListener('load', settle);
   }
 
-  /* ---------- Liquid Glass: pointer specular and scroll drift ----------
-     The JS only ever writes custom properties; it never touches layout.
-     Pointer and scroll share ONE rAF that performs every read before any
-     write, so neither can force a synchronous style flush mid-frame. */
+  /* ---------- Liquid Glass: ambient light position and pointer specular ----------
+     The JS only ever writes custom properties; it never touches layout. */
   try {
+    var ambientEls = Array.prototype.slice.call(document.querySelectorAll('[data-ambient]'));
+    /* --lx/--ly are registered with inherits:false, so a value on the root
+       would never reach the layers that read them. The root is only a
+       fallback so the light still lands if they are ever renamed. */
+    var lightTargets = ambientEls.length ? ambientEls : [document.documentElement];
+
+    /* Written ONCE, here, and never again.
+
+       These two properties sit inside radial-gradient() centre positions
+       on layers carrying filter: blur(34px) and blur(36px), each larger
+       than the viewport. Gradient positions are not compositor-animatable,
+       so every write threw away the layer's raster tiles and re-blurred
+       the whole field. Updating them on scroll was the cause of the
+       reported stutter: confirmed by A/B on the owner's hardware, where
+       freezing these alone made scrolling smooth while blur(34px), the
+       omAmbient animation and all five glass surfaces stayed at full
+       strength.
+
+       (0, -60px) is the design's resting position, what the reference
+       shows at the top of the page. Do not drive these from scroll again.
+       If the drift is wanted back it must be a transform on split child
+       layers, one per sign pair, so the work stays on the compositor. */
+    if (!reduce) {
+      for (var li = 0; li < lightTargets.length; li++) {
+        lightTargets[li].style.setProperty('--lx', '0.0px');
+        lightTargets[li].style.setProperty('--ly', '-60.0px');
+      }
+    }
+
     var rest = { mx: 50, my: -8, spec: 0 };
     var glassState = (typeof Map === 'function') ? new Map() : null;
 
@@ -1231,74 +1267,30 @@
       el.style.setProperty('--spec', spec.toFixed(3));
     }
 
-    var ambientEls = Array.prototype.slice.call(document.querySelectorAll('[data-ambient]'));
-    /* --lx/--ly are registered with inherits:false, so a value on the root
-       would never reach the layers that read them. The root is only a
-       fallback so the drift degrades instead of freezing if the ambient
-       layers are ever renamed. */
-    var lightTargets = ambientEls.length ? ambientEls : [document.documentElement];
-
-    /* scrollHeight is a document-global layout query, so it is measured
-       once rather than inside every frame. resize and load cover the two
-       things that change it: viewport size and lazy images settling. */
-    var scrollMax = 1;
-    var measure = function () {
-      scrollMax = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    };
-
-    var lastLx = NaN, lastLy = NaN;
-    /* Snap to a 2px grid while the page is moving, so the ambient
-       gradients repaint on a fraction of the frames, then write the exact
-       value once the scroll settles so every resting state matches the
-       design. lastLx/lastLy start as NaN so the first write always lands. */
-    var writeDrift = function (snap, y) {
-      var p = Math.min(1, y / scrollMax);
-      var lx = Math.sin(p * Math.PI * 1.6) * 90;
-      var ly = p * 180 - 60;
-      if (snap) { lx = Math.round(lx / 2) * 2; ly = Math.round(ly / 2) * 2; }
-      if (lx === lastLx && ly === lastLy) return;
-      lastLx = lx; lastLy = ly;
-      var sx = lx.toFixed(1) + 'px', sy = ly.toFixed(1) + 'px';
-      for (var i = 0; i < lightTargets.length; i++) {
-        lightTargets[i].style.setProperty('--lx', sx);
-        lightTargets[i].style.setProperty('--ly', sy);
-      }
-    };
-
     var frame = 0, pendingEl = null, pendingX = 0, pendingY = 0;
-    var wantPointer = false, wantScroll = false;
 
+    /* The rect read happens here rather than in the event handler: the
+       browser keeps dispatching moves while content scrolls under a
+       stationary cursor, and reading layout in the handler forced a
+       synchronous flush in the middle of the frame. */
     var run = function () {
       frame = 0;
-      /* Every read first. The pointer rect and the scroll offset are both
-         taken before anything is written, so the first read of the frame
-         meets a clean tree and forces no extra style flush. */
-      var rect = (wantPointer && pendingEl) ? pendingEl.getBoundingClientRect() : null;
-      var y = window.scrollY;
-
-      /* Then every write. */
-      if (rect && rect.width && rect.height) {
-        var mx = Math.round(((pendingX - rect.left) / rect.width) * 200) / 2;
-        var my = Math.round(((pendingY - rect.top) / rect.height) * 200) / 2;
-        var prev = glassState && glassState.get(pendingEl);
-        if (!prev || prev.mx !== mx || prev.my !== my || prev.spec !== 1) {
-          if (glassState) glassState.set(pendingEl, { mx: mx, my: my, spec: 1 });
-          setVars(pendingEl, mx, my, 1);
-        }
-      }
-      wantPointer = false;
-      if (wantScroll) { wantScroll = false; writeDrift(true, y); }
+      if (!pendingEl) return;
+      var rect = pendingEl.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      var mx = Math.round(((pendingX - rect.left) / rect.width) * 200) / 2;
+      var my = Math.round(((pendingY - rect.top) / rect.height) * 200) / 2;
+      var prev = glassState && glassState.get(pendingEl);
+      if (prev && prev.mx === mx && prev.my === my && prev.spec === 1) return;
+      if (glassState) glassState.set(pendingEl, { mx: mx, my: my, spec: 1 });
+      setVars(pendingEl, mx, my, 1);
     };
     var schedule = function () { if (!frame) frame = requestAnimationFrame(run); };
 
     document.addEventListener('pointermove', function (e) {
       var el = e.target && e.target.closest ? e.target.closest('[data-glass]') : null;
       if (!el) return;
-      /* Record only. The rect read happens inside the shared rAF, because
-         scrolling keeps dispatching moves under a stationary cursor and a
-         read here would force layout in the middle of the frame. */
       pendingEl = el; pendingX = e.clientX; pendingY = e.clientY;
-      wantPointer = true;
       schedule();
     }, { passive: true });
 
@@ -1307,7 +1299,7 @@
       if (!el) return;
       /* Still inside the tile, just crossing one of its children. */
       if (e.relatedTarget && el.contains(e.relatedTarget)) return;
-      if (pendingEl === el) { pendingEl = null; wantPointer = false; }
+      if (pendingEl === el) pendingEl = null;
       var from = (glassState && glassState.get(el)) || { mx: rest.mx, my: rest.my, spec: rest.spec };
       var f = { mx: from.mx, my: from.my, spec: from.spec };
       /* Cancel any decay already running on this tile, so two overlapping
@@ -1329,36 +1321,6 @@
       };
       requestAnimationFrame(step);
     }, { passive: true });
-
-    if (!reduce) {
-      measure();
-      window.addEventListener('resize', measure, { passive: true });
-      window.addEventListener('load', measure);
-
-      var settleTimer = 0, wake = 0;
-      /* Hold both light fields' phase while a scroll gesture is running.
-         The keyframes are transform-only and cheap in themselves, but the
-         band's field moves continuously beneath the two dark tiles, so it
-         changes their backdrop on every frame it runs. animation-play-state
-         resumes from the identical phase, so there is no jump or reset. */
-      var holdAmbient = function () {
-        for (var i = 0; i < ambientEls.length; i++) ambientEls[i].style.animationPlayState = 'paused';
-        clearTimeout(wake);
-        wake = setTimeout(function () {
-          for (var j = 0; j < ambientEls.length; j++) ambientEls[j].style.animationPlayState = '';
-        }, 200);
-      };
-
-      window.addEventListener('scroll', function () {
-        holdAmbient();
-        clearTimeout(settleTimer);
-        settleTimer = setTimeout(function () { writeDrift(false, window.scrollY); }, 120);
-        wantScroll = true;
-        schedule();
-      }, { passive: true });
-
-      writeDrift(false, window.scrollY);
-    }
   } catch (err) {}
 
   /* ---------- Reveals (decorative, must never hide content) ---------- */

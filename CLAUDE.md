@@ -80,13 +80,9 @@ animation: omAmbient 30s ease-in-out infinite alternate;
 - `pointermove` finds `e.target.closest('[data-glass]')`, computes the cursor as a percentage of the element's box, and writes `--mx`, `--my`, `--spec: 1`.
 - `pointerout` ignores the event if `e.relatedTarget` is still inside the element; otherwise it eases back to rest over 520ms with `1 - (1-k)^3`, driven by `requestAnimationFrame`. **Custom properties cannot transition without `@property`**, which is why this lerp is written by hand.
 
-**Scroll-driven light drift** - one rAF-throttled `scroll` listener writing on `documentElement`:
-```
-p = min(1, scrollY / max(1, scrollHeight - innerHeight))
---lx = sin(p * PI * 1.6) * 90px
---ly = p * 180 - 60px
-```
-Called once on mount. Skipped entirely under `prefers-reduced-motion: reduce`.
+**Ambient light position** - `--lx` / `--ly` are written **once at mount**, to the design's resting values (`0px`, `-60px`), on the `[data-ambient]` elements. They are never updated afterwards.
+
+The reference drove them from scroll (`p = min(1, scrollY / (scrollHeight - innerHeight))`, `--lx = sin(p * PI * 1.6) * 90px`, `--ly = p * 180 - 60px`). **That was the cause of the reported scroll stutter and has been removed.** Read "Scroll performance" below before reinstating anything here.
 
 **The JS only ever writes custom properties.** It never touches layout.
 
@@ -95,7 +91,7 @@ Called once on mount. Skipped entirely under `prefers-reduced-motion: reduce`.
 - Body copy stays full-opacity ink. Never tint text to match the glass.
 - An `@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))` block thickens the body wash so text still reads where `backdrop-filter` is unsupported. It changes nothing in browsers that support it.
 
-**`-webkit-backdrop-filter` is required** and must accompany every `backdrop-filter` declaration (currently 7 of each). Safari drops the effect entirely without it.
+**`-webkit-backdrop-filter` is required** and must accompany every `backdrop-filter` declaration (currently 6 of each). Safari drops the effect entirely without it.
 
 ### Type scale
 - h1 `clamp(44px, 7.4vw, 116px)`, line-height 0.96, letter-spacing -0.022em, `text-wrap: balance`, max-width 1240px
@@ -223,38 +219,36 @@ Project 05 was renamed from BrewLab to **15GRMS**. The anchor id, the `data-open
 
 ## Scroll performance
 
-Scrolling was reported as not smooth after the redesign shipped. A six-dimension analysis plus adversarial review found the per-frame budget is dominated by **`backdrop-filter` re-resolution**, not by anything in the JS. The glass cannot cache a filtered result across frames because `.ambient` is `position: fixed` while the glass scrolls, so the element-to-backdrop offset changes every frame by construction.
+Scrolling was reported as not smooth after the redesign shipped. **The cause was the scroll-driven light drift**, not the glass.
 
-Correct the surface count before reasoning about it: the often-quoted "21 backdrop-filter elements" is wrong for the scrolling page. With the drawer closed, `html.js .case-study { display: none }` and the drawer's own `visibility: hidden` take all 6 pills out of the box tree, so the live set is **5 glass tiles + 8 nodes**, and after the change below, **5**.
+`--lx` / `--ly` were rewritten on every scroll frame, and they sit inside `radial-gradient()` centre positions on `.ambient` (`filter: blur(34px)`, 128% of the viewport) and `.band-ambient` (`blur(36px)`). Gradient positions are not compositor-animatable: each write discarded those layers' raster tiles and re-blurred roughly 8.5 Mpx at dpr 2. Fixed by writing the light position **once at mount** and never again.
 
-### Applied, all verified to change nothing visually
-- **`.node` carries no `backdrop-filter`.** `.stage--diagram` (via `mask-image`) and the enclosing `.glass-dark` (via its own `backdrop-filter`) each establish a Backdrop Root, so those 8 cards were blurring an empty backdrop for 8 render surfaces and 8 GPU passes per frame. Verified with a same-frame A/B (override applied to Signal's cards only, JobAgent's left intact, both captured in one frame): no visible difference. **Verified in Chromium only.** If the Agents cards ever look flat in Safari, that engine is not honouring the backdrop root and the declarations must come back as a pair.
-- **`.drawer-overlay` gets `visibility: hidden` while closed**, with `transition: ... visibility 0s linear 0.4s` so the fade-out is unchanged. `opacity: 0` alone does not remove a full-viewport `backdrop-filter` from the render tree.
-- **`decoding="async"` on every `<img>`.** Six tile screenshots fall outside Chrome's lazy-load range at first paint and fetch mid-scroll; `decoding="auto"` permits a synchronous main-thread decode exactly as they enter the viewport.
-- **The `--lx`/`--ly` drift is quantized and gated.** Snapped to a 2px grid while the page moves, then written exactly once scrolling settles (120ms), so every resting state still matches the design. `lastLx`/`lastLy` start as `NaN` so the mount-time write always lands.
-- **`@property --lx` / `--ly` with `inherits: false`.** Confines the recalc to the two consumers instead of dirtying every element's inherited style. **This makes the element-level write mandatory:** with `inherits: false`, a value set on the root never reaches the ambient layers. The JS writes on `[data-ambient]` and falls back to the root only if those are ever renamed. Keep the `var(--lx, 0px)` fallbacks for Safari < 16.4, which has no `@property`. Never put `transition: all` on the ambients now that these are interpolable, or the drift will ease instead of tracking the scroll.
+### How this was actually established, and how three rounds were wasted first
+Read this before re-optimising anything here.
 
-- **Both ambient fields pause during a scroll gesture** (`animation-play-state: paused`, resumed 200ms after it stops). The `omAmbient` keyframes are transform-only and cheap in themselves, but `.band-ambient` moves continuously beneath the two dark tiles, so it changed their backdrop on every frame it ran, and at idle as well. `animation-play-state` resumes from the identical phase, so there is no jump or reset. Verified: `running` to `paused` to `running` across a scroll.
-- **Pointer and scroll share ONE rAF that does every read before any write.** `getBoundingClientRect()` moved out of the `pointermove` handler: the browser keeps dispatching moves while content scrolls under a stationary cursor, and a read there forced a synchronous style and layout flush mid-frame, against style the scroll handler had just dirtied. Order matters; do not give the pointer work its own later rAF.
-- **`.cue` carries `will-change: transform, opacity`**, so its 3.6s animation stops dirtying the flagship's `backdrop-filter` render surface 60 times a second on an otherwise still page. Safe here specifically: `.cue` has no descendants and is not an ancestor of anything `position: fixed`, so the containing-block hazard that rules `will-change` out elsewhere does not apply.
-- **`scrollHeight` is measured on `load` as well as `resize`**, since the lazy screenshots change document height after first paint.
+The first diagnosis blamed `backdrop-filter` re-resolution, and three rounds of work were shipped against it: removing `.node`'s backdrop-filter, taking the closed overlay out of the render tree, `decoding="async"`, quantising the drift, `@property inherits:false`, pausing the ambient animations, merging pointer and scroll into one rAF. **None of it made a perceptible difference**, because none of it touched the real cost.
+
+The cause was found by A/B toggling the live page on the owner's own hardware with a console snippet that swapped one `<style>` element between states. Two results settled it: with **all** `backdrop-filter` off but the ambient live it was still janky, and with the ambient hidden but all five glass surfaces at full `blur(30px)` it was smooth. A second probe then isolated the ambient's own properties, and freezing `--lx`/`--ly` alone fixed it with blur, animation and glass all untouched.
+
+Two lessons worth keeping:
+- **Analytical reasoning about the render pipeline was wrong, repeatedly.** The one finding that named this exact mechanism was rated critical by the analyst who found it, then overruled by three independent reviewers arguing that main-thread paint cannot stutter a compositor-driven scroll. They were wrong and the original analyst was right. Measure on the target hardware before spending anything.
+- **Never spend design fidelity on an unmeasured hypothesis.** The next step queued up was reducing the glass blur, which would have cost real fidelity and fixed nothing.
+
+### Applied
+- **The light position is written once at mount** (`0px`, `-60px`, the design's resting values) and never updated. **Do not drive `--lx`/`--ly` from scroll again.** If the drift is ever wanted back it has to be a `transform` on split child layers, one per sign pair (four for `.ambient`, two for `.band-ambient`), with `filter` and the animation left on the parent, so the work stays on the compositor.
+- Kept from the earlier rounds because each is still correct on its own merits, even though none of them fixed the symptom: `.node` carries no `backdrop-filter` (it was blurring an empty backdrop behind two backdrop roots; verified identical in a same-frame A/B, **Chromium only**); `.drawer-overlay` uses `visibility: hidden` while closed so a full-viewport filter does not sit in the render tree; `decoding="async"` on every `<img>`; the pointer specular's `getBoundingClientRect()` runs inside its rAF rather than in the event handler; `.cue` carries `will-change: transform, opacity`, the one place on this page where that is correct.
+- **Removed again:** the ambient `animation-play-state` pause added in round 2. The measurement showed the animation running is not a problem, and pausing an infinite transform risks de-promoting the layer it was promoting.
+- `@property --lx` / `--ly` with `inherits: false` stays. It still means the write must target the `[data-ambient]` elements, never the root. Keep the `var(--lx, 0px)` fallbacks for Safari < 16.4.
+
+Surface-count note, since the wrong number circulated for a while: the "21 backdrop-filter elements" figure is wrong for the scrolling page. With the drawer closed, `html.js .case-study { display: none }` and the drawer's `visibility: hidden` take all 6 pills out of the box tree, so the live set was 5 glass tiles + 8 nodes, and is now **5**.
+
+### The glass blur is exonerated
+`.glass` / `.glass-dark` keep `blur(30px)` on all five surfaces. Measured smooth at full strength once the drift was frozen, so there is no reason to reduce it. The earlier costing (dropping the blur term saves ~8.9 Mpx/frame of Gaussian, taking effective sigma from 45.3 to 34) is real but **not needed**, and it would be a visible change. Do not apply it as an optimisation.
 
 ### Do not do these (assessed and rejected)
 - **`will-change: transform` or `translateZ(0)` on `.ambient`.** It already has an infinite transform animation and a filter, so it is composited already. This buys no promotion and pins roughly 34 MB of backing store.
 - **`contain`, `content-visibility`, or `transform` on `.page`, `<main>`, or any ancestor of `.drawer`.** All create a containing block for `position: fixed` and would break the drawer. `isolation: isolate` is used precisely because it does not.
 - **Moving `overflow-x: hidden` off `body`.** Because `html` computes to `visible`, body's overflow propagates to the viewport and the document scroller stays the viewport. Moving it would relocate the scroller and break the drawer.
-- **Splitting the ambient gradients onto child layers** to drive drift by transform. Not pixel-identical (translating a child moves the gradient's clip, not just its centre), and it moves work onto the compositor, which is the thread already under load.
-
-### Open: the one remaining lever
-`.glass` / `.glass-dark` still carry `blur(30px)`. Because `.ambient` is already `blur(34px)` and `.band-ambient` `blur(36px)`, the glass's own blur only takes effective sigma from 34 to 45.3 (light) and 36 to 46.9 (dark), while costing a multi-pass Gaussian over roughly 8.9 Mpx per frame at dpr 2 (flagship ~4.46 Mpx, the four tiles ~4.48 Mpx). Dropping the blur term and keeping `saturate()`/`brightness()` collapses that to a single colour-matrix pass. It is a real if sub-perceptual change, so it is **the owner's call, not a silent optimisation**, given the 1:1 constraint.
-
-**Decision: still left in place, asked and deferred twice (2026-09-16).** History matters here, so do not re-litigate it from scratch. The first round of no-visual-change fixes was pushed and the owner reported scrolling was *still* not smooth. Rather than spend the fidelity, a second round shipped (the ambient pause, the shared rAF, the cue promotion above), and that is what is currently under test. The glass blur has never been touched.
-
-**Do not drop or reduce it without asking again.** If scrolling is still not smooth after the current round, this is the next lever and the costed options are: all five surfaces (~8.9 Mpx/frame, the full win, effective sigma 45.3 to 34 light and 46.9 to 36 dark), flagship only (~4.46 Mpx/frame, roughly half the win, the four smaller tiles stay pixel-identical), or halving to `blur(14px)` (effective sigma ~36.8, closer to the approved look while removing most of the downscale/upscale pyramid).
-
-Worth being honest about the remaining ceiling: per the analysis, *"a fixed light field under scrolling glass is the design"*. The flagship's per-frame backdrop readback is irreducible by construction, because `.ambient` does not scroll and `.flagship` does, so some cost survives every design-preserving fix. If all three levers are refused, the truthful answer is that the design is at its performance floor on that hardware.
-
-Note for whoever picks this up: the before/after screenshot for that change was never captured, because the Browser pane was not displayed and the page therefore composited no frames. Get a real visual A/B before shipping it.
 
 ## Content Rules
 - **No em dashes or en dashes** in any content, in any encoding (literal, `&#8212;`, `&mdash;`, `&#8211;`, `&ndash;`). Use commas, semicolons, colons or periods.
