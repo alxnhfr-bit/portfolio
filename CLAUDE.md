@@ -4,10 +4,12 @@
 - **Repo**: `github.com/alxnhfr-bit/portfolio`
 - **Live URL**: `https://alxnhfr-bit.github.io/portfolio/`
 - **Hosting**: GitHub Pages (main branch, single `index.html`)
-- **File**: Self-contained `index.html` (~75 KB) plus 17 `.webp` images and one `.mp4` in the repo root
+- **File**: Self-contained `index.html` (~65 KB) plus 17 `.webp` images and one `.mp4` in the repo root
 
 ## Owner
-Alexander Neuhofer - Senior PM at Zalando, Berlin. Building AI product prototypes independently. Portfolio targets consumer PM roles in APAC.
+Alexander Neuhofer - Senior PM at Zalando. Building AI product prototypes independently. Portfolio targets consumer PM roles in APAC.
+
+Do not add location, job history or metrics he has not supplied. An earlier draft of the hero carried a city that was never in the source material and it was removed. The page's whole job is credibility, and there are no invented numbers anywhere in it.
 
 ## Architecture
 Single `index.html`. No build step, no dependencies, no framework. Plain HTML/CSS/JS with Google Fonts via one `<link>`. All CSS lives in one `<style>` block in the head; all JS in one `<script>` at the end of the body. Images are external `.webp` files referenced by relative path (never base64). Deploy by pushing `index.html` to `main`.
@@ -15,295 +17,207 @@ Single `index.html`. No build step, no dependencies, no framework. Plain HTML/CS
 ### Images in the repo root
 `avatar.webp` (256x256), `sundayatlas-flow-poster.webp` (1280x720), and 15 screenshots, all 600px wide:
 - `sundayatlas-{landing,trips,itinerary,creators,extract}.webp` (600x1304)
-- `rise-{dashboard,training,ai-coach,wellbeing,supplements}.webp` (600x1188 to 600x1200; CSS uses `600 / 1194` and `object-fit: cover` absorbs the few px of drift)
+- `rise-{dashboard,training,ai-coach,wellbeing,supplements}.webp` (600x1188 to 600x1200)
 - `15grms-{brew,recipe,brewing,complete,journal}.webp` (600x1224)
+
+The landing page uses only five of these (`avatar`, `sundayatlas-trips/landing/creators`, `15grms-brew`). The rest are used by the case-study drawer, so none can be deleted.
 
 To convert or resize images use Python Pillow via **`/usr/bin/python3`**, which already has it; the Homebrew `python3` first on PATH does not, and refuses `pip install` under PEP 668. Note `sips` can read WebP but cannot write it.
 
 ### Video in the repo root
 - `sundayatlas-flow.mp4` (1280x720, 36s, ~1.15MB) and `sundayatlas-flow-poster.webp` (17KB)
 
-The uncompressed 19.4MB source (`Flow Video - Field Notes.mp4`) is gitignored and stays local. Re-encode with ffmpeg, not `avconvert`, whose presets are quality-targeted and barely shrink the file (best was 5.5MB, and its HEVC preset made it *larger*):
+The uncompressed 19.4MB source (`Flow Video - Field Notes.mp4`) is gitignored and stays local. Re-encode with ffmpeg, not `avconvert`, whose presets are quality-targeted and barely shrink the file:
 
 ```
 ffmpeg -i "source.mp4" -vf scale=1280:720 -c:v libx264 -preset slow -crf 30 \
   -pix_fmt yuv420p -an -movflags +faststart sundayatlas-flow.mp4
 ```
 
-`-an` drops audio (the source has no audio track), `+faststart` lets it stream before fully downloading. CRF 30 at 1280x720 is visually indistinguishable from the 1920x1080 source at the size the drawer renders it, and gives retina headroom for the ~520px display width.
+## Design System: the "Glass" direction
 
-## Design System
+Implemented 2026-09-18 from `design_handoff_portfolio_glass/`. That bundle's `README.md` is the source of truth for values; `Portfolio Glass.dc.html` is the reference prototype. The previous design (chapters, five equal tiles, a slider) is gone.
 
-### Style
-Light, quiet gallery built on one translucent **Liquid Glass** material. An animated ambient light field sits behind the page; every tile, the drawer header and the pill buttons are the same glass refracting it through `backdrop-filter`. Work is grouped into three chapters (Shipped, Agents, Prototypes) rather than one flat grid. There is **no accent color and there are no tinted tiles**; all color comes from the ambient field seen through the glass.
+The shape of it: the hero states the role and scale of the work, each project gets a layout sized to its importance, and the App Store and live-product links sit on the landing page as hard proof rather than being buried.
 
-### Fonts (one Google Fonts link)
-- **Display**: Instrument Serif 400 (h1, project names in tiles and drawer)
-- **UI/body**: Instrument Sans 400/500/600
-
-### Colors (CSS custom properties)
+### Colors
 ```
---bg:        #fcfcfb   page background
---ink:       #17171a   primary text, dark band, dark diagram cards
---text-2:    #55555a   secondary text, taglines, detail paragraphs
---text-3:    #6b6b70   tertiary, meta, labels, captions
---on-dark:   #fcfcfb   primary text on the dark band
---on-dark-2: #c9c9cc   secondary text on the dark band
---on-dark-3: #9a9aa0   tile number on the dark band
---hair:      #e8e8e6   hairline rules and drawer image borders
---dot-muted: #b3b3b6   status dot for Prototype
---img-ph:    #f0f0ee   drawer image placeholder background
+--ground:     #fbfbfa   page background, text on dark
+--ink:        #17171a   primary text, solid buttons
+--ink-2:      #2c2c31   project statements
+--ink-3:      #46464c   hero eyebrow and lede, drawer secondary
+--ink-4:      #55555a   labels, details, footer
+--dark-panel: #131316   15GRMS chapter background
+--on-dark-1:  #eaeaec   statement on dark
+--on-dark-2:  #b8b8c0   label on dark
+--on-dark-3:  #a8a8b0   detail on dark
+--hair:       rgba(23,23,26,0.1)
 ```
-Drawer diagram panels keep a tint: Signal `oklch(0.965 0.012 250)`, JobAgent `oklch(0.965 0.012 320)`.
+Ambient gradients, light: `oklch(0.84 0.15 258 / 0.75)`, `oklch(0.88 0.14 72 / 0.72)`, `oklch(0.84 0.13 330 / 0.68)`, `oklch(0.87 0.12 168 / 0.6)`.
+Ambient gradients, dark chapter: `oklch(0.62 0.17 260 / 0.6)`, `oklch(0.6 0.15 330 / 0.55)`, `oklch(0.68 0.14 75 / 0.5)`.
 
-Links are ink with `text-underline-offset: 5px` and `text-decoration-color: rgba(23,23,26,0.25)`, going to full ink on hover. Overlay is `rgba(23,23,26,0.28)` + `backdrop-filter: blur(3px)`. Focus ring is `2px solid currentColor` with `outline-offset: 3px`, so it inherits ink on light and near-white on dark.
+Body copy was checked at 4.5:1 or better against actual backgrounds. The glass is translucent over a coloured field, so **re-check contrast if the ambient gradients' lightness changes**.
 
-### The Liquid Glass material
-This is the core of the design; everything else is layout around it. It responds to two inputs: the ambient field behind it, and the pointer.
+### Typography
+Instrument Serif 400 for display (h1, project titles, card titles); Instrument Sans 400/500/600 for everything else. One Google Fonts link, `display=swap`, both preconnects.
 
-**Ambient light field (page)** - `.ambient`, a fixed non-interactive layer, first child of `.page`:
-```
-position: fixed; inset: -14%; z-index: -1; pointer-events: none;
-four radial-gradients in oklch at calc(N% +/- var(--lx)) calc(N% +/- var(--ly))
-filter: blur(34px) saturate(120%);
-animation: omAmbient 30s ease-in-out infinite alternate;
-```
-`.page` carries `position: relative; isolation: isolate` so the layer can sit at `z-index: -1` and still paint above the wrapper's own `#fcfcfb`. `isolation` does **not** create a containing block for `position: fixed`, so the drawer still resolves against the viewport from inside it.
+| Role | Size | Line height | Letter spacing |
+| --- | --- | --- | --- |
+| H1 | `clamp(44px, 6.6vw, 88px)` | 0.95 | -0.024em |
+| H2 project | `clamp(34px, 4vw, 52px)` | 1 | -0.015em |
+| H3 card | `clamp(26px, 2.4vw, 32px)` | normal | -0.01em |
+| Hero lede | `clamp(16px, 1.4vw, 18.5px)` | 1.55 | |
+| Statement | `clamp(17px, 1.6vw, 20px)` | 1.4 | |
+| Card statement | 16.5px | 1.4 | |
+| Detail | 15.5px | 1.62 | |
+| Card detail | 14.5px | 1.6 | |
+| Section label | 12.5px, 500 | normal | 0.08em uppercase |
 
-**Ambient light field (dark band)** - the band that carries the 15GRMS flagship is opaque `#17171a`, so it gets its own `.band-ambient` (`position: absolute; inset: -20%; z-index: -1`, three gradients, `blur(36px)`, `omAmbient 34s`). The band carries `position: relative; isolation: isolate; overflow: hidden`.
+### Spacing, radii, layout
+One gutter variable: `--pad: clamp(16px, 3vw, 40px)`. Content column `max-width: 1560px`. Section gaps `clamp(28px, 3.5vw, 40px)`; panel padding `clamp(28px, 4vw, 48px)`; card padding `clamp(24px, 2.6vw, 30px)`.
 
-**Glass surface (light)** - `.glass`, four background layers in this order: the pointer-tracked specular, the body wash, a top-left lens, a bottom shade. Then `backdrop-filter: blur(30px) saturate(205%) brightness(1.04)` and a six-layer inset shadow (bright top rim, hairline rim all round, light gathering at the left and right edges, soft bottom shade, outer cast). **Dark variant** `.glass-dark` is the same structure with low-alpha white instead of tint, `saturate(165%) brightness(1.06)`, and a black-based shadow stack.
+Radii: `clamp(24px, 3vw, 40px)` large panels, `28px` cards and the portrait screenshot, `22px 22px 0 0` bleeding screenshots, `999px` pills and avatar.
 
-**Hover** - small tiles lift (`translateY(-4px)`) and the rim brightens. The flagship band deliberately does **not** lift, only brightens; it is near full screen, so a lift reads as a glitch. This matches the reference.
+### The glass material
+Six recipes, as classes: `.glass-panel` (heavy, SundayAtlas), `.pill-id`, `.pill-nav`, `.btn-glass`, `.card-dark` (15GRMS text card), `.card` (project cards). Each is a layered gradient plus `backdrop-filter` plus an inset shadow stack. Exact values are in the handoff README under "Glass recipes"; the file matches them.
 
-**Pointer specular: REMOVED (owner request, 2026-09-17).** The first background layer of `.glass` / `.glass-dark` used to follow the cursor, driven by two delegated `pointermove` / `pointerout` listeners writing `--mx`, `--my` and `--spec`, with a hand-written 520ms rAF lerp back to rest (custom properties cannot transition without `@property`). All of it is gone, and the `data-glass` opt-in hooks went with it: no element carries one, and no JS writes those properties.
+Three things are load-bearing:
+1. **The material only works over the ambient field.** On a plain white parent it disappears.
+2. **`.page` needs `isolation: isolate` and `overflow: hidden`.** `isolation` scopes what `backdrop-filter` samples, `overflow` bounds the negative-inset ambient layers. Neither creates a containing block for `position: fixed`, which is why the drawer still resolves against the viewport from inside.
+3. **`backdrop-filter` is on exactly 8 elements, which is the intended ceiling.** Verified: 8 declarations, each paired with `-webkit-`. Adding more surfaces, or nesting glass inside glass beyond the one case in the dark chapter, costs frames on scroll. An `@supports not (...)` block thickens the gradients where `backdrop-filter` is unsupported.
 
-**The gradient layer itself STAYS**, at the resting values still declared on `.glass` and `.glass-dark` (`--mx: 50%; --my: -8%; --spec: 0`). It is one of the four layers that make the glass read as glass, and deleting it flattens every card. Keep those declarations; the gradients resolve against them.
+### The ambient field
+`.ambient` is `position: fixed; inset: -16%; z-index: 0; pointer-events: none`, four OKLCH radials, `filter: blur(40px) saturate(135%)`, `omAmbient 30s`. Content sits at `z-index: 1`. The dark chapter has its own `.dark-ambient` at `inset: -20%` with three radials and `omAmbient 34s`.
 
-The history, so it is not relitigated: the complaint was that against the dark Agents cards the white highlight read as a smudge trailing the cursor. It came off those two first, then off the 15GRMS band when that moved to dark glass, then off everything. To restore it, re-add the two listeners and the `data-glass` attributes. Nothing in the material needs to change.
+`@keyframes omAmbient` animates **transform only** (translate3d plus scale). **Never animate `background-position`, `filter`, or the gradient stops**, and never drive the gradient centre positions from scroll. See "Scroll performance" below: that mistake cost four rounds once already.
 
-**Ambient light position** - `--lx` / `--ly` are written **once at mount**, to the design's resting values (`0px`, `-60px`), on the `[data-ambient]` elements. They are never updated afterwards.
+### The pointer specular
+One `pointermove` listener on `.page`, `{ passive: true }`, throttled with a single in-flight `requestAnimationFrame`, feeding **one** element: the SundayAtlas panel's `.specular` layer. Percentages are of the page root's box, as the handoff specifies.
 
-The reference drove them from scroll (`p = min(1, scrollY / (scrollHeight - innerHeight))`, `--lx = sin(p * PI * 1.6) * 90px`, `--ly = p * 180 - 60px`). **That was the cause of the reported scroll stutter and has been removed.** Read "Scroll performance" below before reinstating anything here.
+Deviation from the handoff, deliberate: `--mx` / `--my` are registered with `@property { inherits: false }` and written **on the specular layer itself**, not on the page root. The maths and the visual are identical; writing on the consumer keeps a pointermove from dirtying the inherited style of every element in the document. The registered initial values (`50%`, `-10%`) are the handoff's resting position, so the panel reads correctly before the first pointer event and on touch devices, which never fire one.
 
-**The JS only ever writes custom properties.** It never touches layout.
-
-**Legibility** - glass must never cost contrast:
-- Every tile's title row sits on a legibility plate (`.tile--light .tile-text` / `.tile--dark .tile-text`), a `linear-gradient(to top, ...)` from `rgba(255,255,255,0.62)` or `rgba(10,10,12,0.62)` to transparent, with row padding `16px clamp(20px, 2.5vw, 32px) clamp(24px, 2.5vw, 32px)`.
-- Body copy stays full-opacity ink. Never tint text to match the glass.
-- An `@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))` block thickens the body wash so text still reads where `backdrop-filter` is unsupported. It changes nothing in browsers that support it.
-
-**`-webkit-backdrop-filter` is required** and must accompany every `backdrop-filter` declaration (currently 6 of each). Safari drops the effect entirely without it.
-
-### Type scale
-- h1 `clamp(44px, 7.4vw, 116px)`, line-height 0.96, letter-spacing -0.022em, `text-wrap: balance`, max-width 1240px
-- Chapter labels 13px 500 ink (`#fcfcfb` on the dark band), `padding: 0 0 22px`, no rule and no counts
-- Tile name `clamp(28px, 2.6vw, 36px)` serif; tile number 13px; tile tagline 15px/1.45
-- Drawer h2 `clamp(40px, 5vw, 56px)` serif; drawer tagline 19px/1.45
-- Story: label 12px uppercase 0.06em; statement 19px/500; detail 15px/1.6
-- Meta, status, footer and "Case study" 13px; diagram node label 12px, node text 13px/1.4
-
-### Layout and shape
-- Container `max-width: 1560px`, side padding `--pad-x: clamp(16px, 3vw, 40px)`
-- Radii: flagship `clamp(28px, 3vw, 44px)`, tiles 28px, tile screens 18px, drawer screens 16px, tile diagram cards 14px, drawer diagram cards 12px, drawer panels 20px, buttons 999px
-- Grid gap 20px. Agents grid `repeat(auto-fit, minmax(min(100%, 360px), 1fr))`; Prototypes grid `repeat(auto-fit, minmax(min(100%, 320px), 1fr))`
-- Dark band `margin: clamp(56px, 7vw, 104px) 0; padding: clamp(48px, 6vw, 88px) 0`
-- Tile screens: `1px solid rgba(23,23,26,0.08)`, `box-shadow: 0 20px 40px -20px rgba(23,23,26,0.3)`
-
-### Chapter compositions
-Phones sit in a fixed-height stage with `overflow: hidden` and are deliberately cropped by its bottom edge. They overlap via negative margins and stack with z-index:
-- **Flagships** (SundayAtlas and 15GRMS), stage `clamp(320px, 38vw, 540px)`, screens `clamp(132px, 14.5vw, 204px)`. SundayAtlas at `600/1304`: extract (mt 64, mr -24, z1), trips (mt 32, mr -24, z2), landing (z3), itinerary (mt 32, ml -24, z2), creators (mt 64, ml -24, z1)
-- 15GRMS uses the same flagship fan at `600/1224`, via `class="shot shot--flagship ar-brew"`: `.ar-brew` is declared after `.shot--flagship` so it wins the aspect-ratio. Order: journal (mt 64, mr -24, z1), complete (mt 32, mr -24, z2), brew (z3), recipe (mt 32, ml -24, z2), brewing (mt 64, ml -24, z1)
-- **Prototypes** (Rise only, since 15GRMS was promoted), stage `clamp(220px, 24vw, 320px)` with `padding-top: clamp(28px, 4vw, 48px)`, screens `clamp(120px, 12vw, 160px)`: left (mt 40, mr -28, z1), centre (z2), right (mt 40, ml -28, z1). **The stage height is deliberately identical to the Agents stage** so the two chapters' cards match; keep them in sync.
-- **Signal and JobAgent** have no screenshots. Each shows its pipeline as a stack of cards joined by 1px x 14px connectors, in a `clamp(220px, 24vw, 320px)` container faded out with `mask-image: linear-gradient(to bottom, #000 74%, transparent 100%)`. Since they moved into the light Experiments slider, `.node` is the light treatment (`linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,255,255,0.62))`, ink label, `--text-2` body, `rgba(23,23,26,0.25)` connectors). `.node--dark` stays dark for JobAgent's emphasised "3 . Score" card.
-
-### The Experiments slider
-`.slider` is `grid-auto-flow: column` with `grid-auto-columns: minmax(320px, 1fr)` and `overflow-x: auto`. **No width breakpoint is involved and none should be added:** three cards fill the row while each still fits, and the 320px floor forces overflow and snap-scrolling on its own at roughly 1050px of viewport. Measured: no scroll at 1440, scrolls at 768 (1046px of content) and 390 (1032px).
-
-Two details are load-bearing. `overflow-x: auto` computes `overflow-y` to `auto` as well, so the slider carries block padding with a matching negative block margin, or it clips the cards' hover lift and drop shadows. The inline padding/negative-margin pair does the same job horizontally, letting cards scroll out to the page edge rather than stopping at the gutter, without widening the page (verified: no horizontal overflow at any width).
-
-`.tile-text` carries `margin-top: auto` so that when the grid stretches every card to the tallest, the slack lands in the open glass above the title row rather than under the text.
-
-**Gutters are identical for all five cards (owner request, 2026-09-17).** The reference had the flagship full-bleed, edge to edge, while the four chapter cards sat inside `.container`. The flagship is now inset to match, via `width: calc(min(100%, 1560px) - 2 * var(--pad-x))` plus `margin-inline: auto` on `.flagship` itself. That reproduces the container geometry without a wrapper, so the markup stays flat and the flagship keeps its own stacking. Because of it, `.flagship-title` must NOT re-apply `max-width`/`--pad-x` (that would double the inset); it is a plain `width: 100%`, and its `.tile-text` takes the same `clamp(20px, 2.5vw, 32px)` internal padding as the other cards, which also lines its title up with the Signal and Rise titles. Measured equal at 390, 768, 1440 and 1920. Side effect worth knowing: the flagship is now `2 * --pad-x` narrower, so the five-phone fan crops slightly earlier than before.
-
-**Card heights.** No longer a special case. Signal, JobAgent and Rise share one grid row in the slider, so they stretch to a common height automatically (measured 484px each at 1440). The old `.tile--light .tile-left { flex: 1 1 100% }` hack, which forced a matching status-row wrap so two separate grids would agree, has been REMOVED as obsolete.
-
-**Images must keep `height: auto` in CSS.** They carry `width`/`height` attributes for CLS, and without `height: auto` that HTML `height` attribute (a presentational hint) beats `aspect-ratio` and the phones render full-height and hugely zoomed.
-
-### Animation
-- `@keyframes omAmbient` drives both ambient layers, `transform`-only (translate3d + scale) so it stays on the compositor
-- `@keyframes omDrift` drives the flagship's scroll cue, a 26px chevron at `rgba(23,23,26,0.42)`, `3.6s ease-in-out infinite`, `pointer-events: none`, decorative only
-- Tiles and drawer content fade up: opacity 0 to 1 and `translate: 0 14px` to 0, 0.6s `cubic-bezier(0.22,1,0.36,1)`, via IntersectionObserver (threshold 0.08, rootMargin `0 0 -6% 0`). Elements already in view on first load are shown, not animated
-- The reveal uses the CSS `translate` property, not `transform`, so the tile's `transform: translateY(-4px)` hover composes with it instead of fighting it
-- Drawer slide: `transform` 0.5s `cubic-bezier(0.32,0.72,0,1)`; overlay opacity 0.4s
-
-### Forced light mode
-`<meta name="color-scheme" content="light only">` plus a `@media (prefers-color-scheme: dark)` block that pins `background-color`/`color` on `html`, `body`, `.page` and the drawer so OS dark mode cannot invert the palette.
-
-### Reduced motion
-`@media (prefers-reduced-motion: reduce)` collapses animation and transition durations, kills `[data-ambient]` and `[data-cue]` outright, forces revealed elements visible, and drops the hover lift. The JS also checks `matchMedia` and skips both the scroll drift and the reveal priming. (There is no longer a pointer specular to exempt here; see the material section above.)
+**Do not re-add per-card pointer listeners.** The previous design had a specular on every card and it was removed on request. This is the one element that gets it.
 
 ## Page Structure
 
 ```
-.page  (position: relative; isolation: isolate)
-  .ambient                      the page light field, z-index -1
+.page  (position:relative; isolation:isolate; overflow:hidden; min-height:100vh)
+  .ambient                        fixed light field, z-index 0
 
-  Top bar (.topbar, not sticky)
-    - avatar 28px + "Alexander Neuhofer"
-    - LinkedIn, GitHub
+  .shell  (z-index 1, max-width 1560px, centred)
+    .topbar    identity pill (glass) + nav pills: Work / GitHub / LinkedIn
+               LinkedIn is solid ink, the other two are glass
+    .hero      eyebrow / h1 / lede / two buttons
+               "Download 15GRMS" (solid) and "Open SundayAtlas" (glass)
 
-  Hero (header.hero)
-    - h1: "I find friction in everyday experiences and turn it into focused, AI-powered products."
-          (non-breaking hyphen &#8209; in AI-powered)
-    - byline + "Connect on LinkedIn" / "GitHub"
+    main#work
+      .sec   01 SundayAtlas   .panel.glass-panel, no bottom padding so the
+                              screenshots bleed off the bottom edge.
+                              .specular child. Header row: label, serif h2,
+                              statement, "Case study" link.
+                              .shots: three screenshots, centre one taller.
+      .sec   02 15GRMS        .dark-panel on #131316 with .dark-ambient.
+                              .dark-grid: .dark-text (card-dark) plus the
+                              portrait .dark-shot. App Store button and a
+                              "Case study" link.
+      .sec   03 to 05         .cards: Signal, JobAgent, Rise as .proj-card.
 
-  main
-    div.work
-      Chapter "Shipped"          TWO flagship bands, deliberately unalike
-        - label inside .container
-        - 01 SundayAtlas  a.flagship.glass on the page background
-                          Live . Flagship, scroll cue in its cue-wrap
-        - 02 15GRMS       a.flagship.glass-dark.tile--dark, wrapped in
-                          .band so it sits on #17171a with its own
-                          .band-ambient. Live . App Store. Its cue-wrap is
-                          left EMPTY: the cue only belongs on the first
-                          thing you see.
-          Both are min-height min(86vh, 900px), column with
-          space-between: cue-wrap (flex:1) / 5 screens / title row.
-          Two white bands stacked read as one thing, which is why the
-          second one is dark (owner request, 2026-09-17).
+      .drawer-overlay
+      .drawer                 the five case studies (see below)
 
-      Chapter "Experiments"      the old Agents and Prototypes, merged
-        - .slider, three LIGHT glass cards side by side:
-            03 Signal    Live . Runs weekly (eval-loop stack)
-            04 JobAgent  Live . Runs daily  (daily-pipeline stack, dark "3 . Score" card)
-            05 Rise      Prototype          (3 screens)
-          Signal and JobAgent moved off the dark band, so their pipeline
-          cards are now the LIGHT .node treatment.
-
-    div.drawer-overlay
-
-    section.drawer  (the case studies)
-      - sticky glass header "Case study" + Close pill
-      - five <article class="case-study" id="sundayatlas|signal|jobagent|rise|15grms">
-          meta row, serif h2, tagline, optional live link
-          SundayAtlas only: the flow video (figure.cs-flow) above the strip
-          screens strip (SundayAtlas, Rise, 15GRMS) or tinted diagram panel (Signal, JobAgent)
-          four story rows: Problem / Insight / Product|Build|Prototype / Takeaway
-          SundayAtlas only: four feature lists in a 2-col grid
-          "Next NN Name" glass pill linking to the next project (wraps 05 to 01)
-
-  Footer
-    - "Alexander Neuhofer . 2026" / GitHub, LinkedIn
-    - No email is shown; the design links GitHub instead
+    footer
 ```
 
-The case studies sit **inside `<main>` and before `<footer>`** on purpose. With JS off they are the bulk of the page's content, so they must not fall outside the main landmark or after the contentinfo landmark. `position: fixed` still resolves against the viewport from there because no ancestor creates a containing block.
+The case studies sit **inside `<main>` and before `<footer>`** on purpose. With JS off they are the bulk of the page's content, so they must not fall outside the main landmark.
+
+### What the handoff left open, and what was chosen
+The handoff explicitly said to decide these with the owner rather than guess. Both were decided on 2026-09-18:
+
+- **Case studies**: the handoff has a "Case study" affordance with no destination designed. The owner chose to **keep the existing slide-in drawer**. Consequences, all deliberate:
+  - SundayAtlas's "Case study" opens the drawer rather than linking to `sundayatlas.vercel.app` as the reference does. The hero's "Open SundayAtlas" already carries the live link.
+  - The 15GRMS chapter gained a "Case study" link the reference does not have, or that case study would be unreachable.
+  - The Rise card opens its case study rather than linking straight out, and its detail line reads "Case study" instead of "View the prototype". The prototype link lives inside that case study.
+  - Without those three, three of the five case studies would only be reachable by typing a `#hash`.
+- **The SundayAtlas screenshot row at narrow widths**: the owner chose a **scrollable snapping strip** over dropping to a single screenshot.
+
+### Responsive: two fluid handovers, no width breakpoints
+The only media queries in the file are `prefers-color-scheme` and `prefers-reduced-motion`. Both narrow-width behaviours the handoff asked about are handled fluidly, and **should stay that way**:
+
+- **`.shots`** is `grid-auto-flow: column` with `grid-auto-columns: minmax(150px, 1fr)` and `overflow-x: auto`. Three-up while each still fits, then a snapping strip. The 150px floor means a screenshot never drops below 150px, which is the legibility problem the handoff flagged. Measured: no scroll at 560 and above (about 153px each at 560), scrolls at 390.
+- **`.dark-grid`** is flex-wrap, not the handoff's two-column grid. `.dark-text { flex: 1 1 300px }` and `.dark-shot { flex: 0 1 300px }`. **The 300px basis is what sets the wrap point**: raising it collapses the layout earlier. Measured: side by side at 768 and above, wrapped at 700, which is the handoff's "below roughly 720px". At 1440 the image is exactly 300px wide, matching the spec's `minmax(0, 300px)` column.
+
+`.shots` also carries 2px of block padding with a matching negative margin: `overflow-x: auto` computes `overflow-y` to `auto` as well, which would otherwise clip the images' top highlight.
+
+Verified with **no horizontal overflow at 390, 560, 700, 768, 900, 1024, 1440 and 1920px**.
+
+## The case-study drawer
+
+Not part of the Glass handoff. Retained on the owner's instruction so the five written case studies stay reachable, restyled to the new palette and glass pills.
 
 ### Progressive enhancement (important)
 The case studies are **real content in the DOM**, not JS-generated. An inline script in the head adds a `js` class to `<html>`.
-- **Without JS**: `.drawer` is a static block at the end of the page, all five case studies are visible, the overlay and Close button are hidden, tiles are ordinary anchors that jump to their case study, and "Next" is an ordinary link.
+- **Without JS**: `.drawer` is a static block at the end of `<main>`, all five case studies are visible, the overlay and Close button are hidden, and every trigger is an ordinary anchor that jumps to its case study.
 - **With JS**: the same markup becomes a fixed slide-in drawer; only `.case-study.is-active` is displayed.
 
-Because of this, **never move the case-study content into JavaScript** and never hide it with CSS that is not scoped under `html.js`. The same rule governs the reveal: `[data-reveal]` elements carry **no** opacity styling until JS adds `.reveal`, so nothing can be stranded invisible.
+Never move case-study content into JavaScript, and never hide it with CSS that is not scoped under `html.js`.
 
-### Drawer behavior
-Open on tile click (`preventDefault`, `history.replaceState` to `#id`), lock body scroll, mark the background `inert`, focus the Close button. Close via the Close button, overlay click or Escape: animate out, unmount the active article after 500ms, restore scroll, drop `inert`, clear the hash, return focus to the tile that opened it. `#hash` deep-links into a case study on load and on `hashchange`. "Next" swaps the active article, scrolls the panel to top and re-focuses Close.
+### Behaviour and the details that are easy to regress
+Open on trigger click (`preventDefault`, `history.replaceState` to `#id`), lock body scroll, mark the background `inert`, focus Close. Close via Close, overlay click or Escape: animate out, unmount after 500ms, restore scroll, drop `inert`, clear the hash, return focus to the trigger. `#hash` deep-links on load and on `hashchange`.
 
-The SundayAtlas flow video carries **`data-src` rather than `src`**, plus `preload="none"`. `setActive()` calls `hydrateVideo()` to attach the real `src` only when that case study is opened, so the landing page downloads none of the 1.15MB (only the 17KB poster), and the file is not fetched at all until someone presses play. `stopVideo()` pauses it when you switch to another case study or close the drawer. A `<noscript>` link to the mp4 sits inside the figure so it stays reachable without JS.
-
-Timing and focus details that are easy to regress:
 - The drawer uses a **forced reflow** (`void panel.offsetWidth`) before adding `.is-open`, not `requestAnimationFrame`. rAF does not fire in a hidden or throttled tab, which left deep-linked drawers stuck closed.
-- Focus must be set **after** `.is-open` lands, because the panel is `visibility: hidden` until then and a hidden element cannot take focus.
-- `close()` flips the `isOpen` flag **synchronously, before** restoring focus. The focus guard keys off that flag, so if it is still set the guard bounces focus straight back into the closing panel and the tile never gets it.
-- `switchTo()` must re-focus Close: the "Next" link lives inside the article being unmounted, so focus would otherwise fall to `<body>`, outside the open dialog.
-- On a deep link the browser scrolls the panel to the target article, so `panel.scrollTop` is reset again on `load` and via short timeouts.
-- The drawer wiring is attached **before** the glass and reveal setup, and both decorative layers are wrapped in `try`/`catch`. `html.js .case-study { display: none }` applies unconditionally, so a throw in the decorative layer must never be able to leave the case studies unreachable.
-- The reveal keeps a `data-revealed="1"` attribute so an element that has been revealed once stays revealed across re-scans, and a **600ms safety timer** unconditionally reveals everything if no observer callback ever fires.
+- Focus must be set **after** `.is-open` lands: the panel is `visibility: hidden` until then and a hidden element cannot take focus.
+- `close()` flips `isOpen` **synchronously, before** restoring focus, or the focus guard bounces focus back into the closing panel.
+- `switchTo()` must re-focus Close: the Next link lives inside the article being unmounted.
+- The drawer wiring is attached **before** the specular, and the specular is wrapped in try/catch, so a throw in the decorative layer can never leave the case studies unreachable.
 
-### Divergences from the design reference (deliberate)
-The reference prototype is `reference/Portfolio v5b Chapters.dc.html`. Two things in it were **not** reproduced:
-- Its `_scan()` removes the `pointermove` / `pointerout` / `scroll` listeners every time it runs, and it runs on every update, so the glass goes dead after the first drawer open. README section 5 says to remove them on *teardown*. This build follows the README.
-- Its reveal is driven by inline `el.style.transform`, which would fight the tile's hover `transform`. This build uses the CSS `translate` property instead, which composes.
+The SundayAtlas flow video carries **`data-src` rather than `src`** plus `preload="none"`, hydrated only when that case study opens, so the landing page downloads none of the 1.15MB. A `<noscript>` link keeps it reachable without JS.
 
-The reference was also authored against an older repo snapshot: it names nine images that no longer exist (`sundayatlas-home/destinations/map/inspo`, `brewlab-*`), calls project 05 "BrewLab", and gives it the tagline "AI Coffee Brewing Assistant". **Content was taken from the live `index.html`, not from the reference.**
-
-### Naming and the 15grms id
-Project 05 was renamed from BrewLab to **15GRMS**, and is now project **02**, promoted out of Prototypes when it shipped to the App Store on 17 September 2026. The anchor id, the `data-open`/`data-next` values, the entry in the JS `IDS` array and the image filenames all use lowercase `15grms`; the visible name is uppercase `15GRMS`.
-
-**That id starts with a digit, so `document.querySelector('#15grms')` throws** ("not a valid selector") because a CSS identifier cannot begin with a digit unescaped. The site is safe because its JS resolves case studies with `document.getElementById(id)` and only ever builds the hash as a string. If you ever need a selector, scope it off the element (`document.getElementById('15grms').querySelector(...)`) or escape it as `#\\31 5grms`. The same applies to any CSS rule or `:target` selector.
+### The 15grms id
+`document.querySelector('#15grms')` **throws**: a CSS identifier cannot begin with an unescaped digit. The JS resolves case studies with `getElementById` and only ever builds the hash as a string. If you need a selector, scope it off the element or escape it as `#\\31 5grms`.
 
 ## Scroll performance
 
-Scrolling was reported as not smooth after the redesign shipped. **The cause was the scroll-driven light drift**, not the glass.
+Read this before optimising anything in the ambient or glass layers. It is the most expensive lesson in this repo's history.
 
-`--lx` / `--ly` were rewritten on every scroll frame, and they sit inside `radial-gradient()` centre positions on `.ambient` (`filter: blur(34px)`, 128% of the viewport) and `.band-ambient` (`blur(36px)`). Gradient positions are not compositor-animatable: each write discarded those layers' raster tiles and re-blurred roughly 8.5 Mpx at dpr 2. Fixed by writing the light position **once at mount** and never again.
+The previous design shipped with visible scroll stutter. **The cause was scroll-driven light drift**: two custom properties were rewritten every scroll frame, and they sat inside `radial-gradient()` centre positions on layers carrying `filter: blur(34px)`. Gradient positions are not compositor-animatable, so each write discarded those layers' raster tiles and re-blurred roughly 8.5 Mpx at dpr 2.
 
-### How this was actually established, and how three rounds were wasted first
-Read this before re-optimising anything here.
+Three rounds of fixes were shipped against a wrong diagnosis (`backdrop-filter` re-resolution) and **none made a perceptible difference**. The cause was found by A/B toggling the live page on the owner's own hardware with a console snippet that swapped one `<style>` element between labelled states.
 
-The first diagnosis blamed `backdrop-filter` re-resolution, and three rounds of work were shipped against it: removing `.node`'s backdrop-filter, taking the closed overlay out of the render tree, `decoding="async"`, quantising the drift, `@property inherits:false`, pausing the ambient animations, merging pointer and scroll into one rAF. **None of it made a perceptible difference**, because none of it touched the real cost.
+Two rules that follow:
+- **Never drive a gradient position, or anything else that lands in paint, from scroll.** The current design has no scroll-driven anything, which is the main reason it is quick. Keep it that way.
+- **Measure on the target hardware before spending design fidelity.** The step queued up when the real cause was found was reducing the glass blur, which would have cost real fidelity and fixed nothing. The one analysis that named the true mechanism was overruled by three reviewers who were wrong.
 
-The cause was found by A/B toggling the live page on the owner's own hardware with a console snippet that swapped one `<style>` element between states. Two results settled it: with **all** `backdrop-filter` off but the ambient live it was still janky, and with the ambient hidden but all five glass surfaces at full `blur(30px)` it was smooth. A second probe then isolated the ambient's own properties, and freezing `--lx`/`--ly` alone fixed it with blur, animation and glass all untouched.
-
-Two lessons worth keeping:
-- **Analytical reasoning about the render pipeline was wrong, repeatedly.** The one finding that named this exact mechanism was rated critical by the analyst who found it, then overruled by three independent reviewers arguing that main-thread paint cannot stutter a compositor-driven scroll. They were wrong and the original analyst was right. Measure on the target hardware before spending anything.
-- **Never spend design fidelity on an unmeasured hypothesis.** The next step queued up was reducing the glass blur, which would have cost real fidelity and fixed nothing.
-
-### Applied
-- **The light position is written once at mount** (`0px`, `-60px`, the design's resting values) and never updated. **Do not drive `--lx`/`--ly` from scroll again.** If the drift is ever wanted back it has to be a `transform` on split child layers, one per sign pair (four for `.ambient`, two for `.band-ambient`), with `filter` and the animation left on the parent, so the work stays on the compositor.
-- Kept from the earlier rounds because each is still correct on its own merits, even though none of them fixed the symptom: `.node` carries no `backdrop-filter` (it was blurring an empty backdrop behind two backdrop roots; verified identical in a same-frame A/B, **Chromium only**); `.drawer-overlay` uses `visibility: hidden` while closed so a full-viewport filter does not sit in the render tree; `decoding="async"` on every `<img>`; the pointer specular's `getBoundingClientRect()` runs inside its rAF rather than in the event handler; `.cue` carries `will-change: transform, opacity`, the one place on this page where that is correct.
-- **Removed again:** the ambient `animation-play-state` pause added in round 2. The measurement showed the animation running is not a problem, and pausing an infinite transform risks de-promoting the layer it was promoting.
-- `@property --lx` / `--ly` with `inherits: false` stays. It still means the write must target the `[data-ambient]` elements, never the root. Keep the `var(--lx, 0px)` fallbacks for Safari < 16.4.
-
-Surface-count note, since the wrong number circulated for a while: the "21 backdrop-filter elements" figure is wrong for the scrolling page. With the drawer closed, `html.js .case-study { display: none }` and the drawer's `visibility: hidden` take all 6 pills out of the box tree, so the live set was 5 glass tiles + 8 nodes, and is now **5**.
-
-### The glass blur is exonerated
-`.glass` / `.glass-dark` keep `blur(30px)` on all five surfaces. Measured smooth at full strength once the drift was frozen, so there is no reason to reduce it. The earlier costing (dropping the blur term saves ~8.9 Mpx/frame of Gaussian, taking effective sigma from 45.3 to 34) is real but **not needed**, and it would be a visible change. Do not apply it as an optimisation.
-
-### Do not do these (assessed and rejected)
-- **`will-change: transform` or `translateZ(0)` on `.ambient`.** It already has an infinite transform animation and a filter, so it is composited already. This buys no promotion and pins roughly 34 MB of backing store.
-- **`contain`, `content-visibility`, or `transform` on `.page`, `<main>`, or any ancestor of `.drawer`.** All create a containing block for `position: fixed` and would break the drawer. `isolation: isolate` is used precisely because it does not.
-- **Moving `overflow-x: hidden` off `body`.** Because `html` computes to `visible`, body's overflow propagates to the viewport and the document scroller stays the viewport. Moving it would relocate the scroller and break the drawer.
+Also assessed and rejected, still true of this design:
+- **`will-change` or `translateZ(0)` on `.ambient`**: it already has an infinite transform animation and a filter, so it is composited. No benefit, and it pins tens of MB of backing store.
+- **`contain`, `content-visibility`, or `transform` on `.page` or any ancestor of `.drawer`**: all create a containing block for `position: fixed` and would break the drawer.
 
 ## Content Rules
 - **No em dashes or en dashes** in any content, in any encoding (literal, `&#8212;`, `&mdash;`, `&#8211;`, `&ndash;`). Use commas, semicolons, colons or periods.
 - **No mention of "Lovable" by name** in SundayAtlas content. Rise and 15GRMS may mention it.
 - If an email is ever shown, encode the `@` as `&#64;` so Cloudflare's email protection cannot mangle it on GitHub Pages. The current design shows no email.
-- Case-study copy is fixed. Do not rewrite, shorten or reorder it without being asked.
+- **Project copy is verbatim from the case studies.** The landing page surfaces each project's strongest existing line as its headline; it invents nothing. The hero headline and lede are the one piece of new copy, written for this redesign and approved by the owner.
 - **Regenerate the whole file rather than patching it.** Partial writes have corrupted it before.
 
 ## Known Issues / Pending Work
-
-### Inherited from the design reference (faithful, not bugs)
-- **The flagship fan is cropped on narrow screens.** `clamp(132px, 14.5vw, 204px)` floors at 132px below ~910px, so the five-phone cluster is a fixed 564px while the stage is only 390px at phone width; the outer two phones are clipped by the stage's `overflow: hidden`. Verified that this causes no page overflow. Scaling the overlap with the phone width, or dropping to three phones below ~540px, would fix it at the cost of fidelity.
-- **The flagship title row has no legibility plate**, unlike every other tile. The README asks for a plate on every title row, but the reference's flagship omits it, and PROMPT.md says to trust the reference for values. Its text sits on open glass at the bottom of a 900px band, which reads fine today but is the one spot where contrast depends on what the ambient field is doing behind it.
-- **The pipeline fade can cross card two on short containers**, since the `mask-image` tail is 26% of a `clamp(220px, 24vw, 320px)` height.
-
-### Actual pending work
 - **`og:image` is still missing**, so shared links render a text-only card. A 1200x630 social image is the remaining SEO task.
-- **`<title>` and `og:title` still say "Product Builder"** even though the hero role line was dropped. Kept deliberately because the existing head meta and OG tags had to be preserved.
-- **Signal has no repo link.** If the repo is made public, add a live link to the Signal case-study head like the other projects have.
-- 15GRMS home screen says "The Adler Original" while the recipe and journal screens say "The Hoffmann Method". The story copy itself was rewritten from the app README on 17 September 2026 and now matches the shipped product.
-- **Not yet checked in Safari.** All 7 `backdrop-filter` declarations carry `-webkit-backdrop-filter`, but the glass has only been verified in the Chromium-based preview.
-
-## Responsive Behaviour
-Everything is fluid via `clamp()` and auto-fit grids; there are no hand-written width breakpoints.
-- **Below ~1000px** both 2-up grids stack to one column
-- **Drawer**: `width: min(100%, 600px)`, so full width on small screens
-- Verified with **no horizontal overflow at 390, 768, 1024, 1440 and 1920px**. The only elements extending past the viewport by design are the two ambient layers (one `position: fixed`, one inside `overflow: hidden`) and the closed drawer parked at `translateX(100%)`
+- **`<title>` and `og:title` still say "Product Builder"**, kept because the existing head meta and OG tags had to be preserved. The new hero says something sharper; worth revisiting together.
+- **Signal has no repo link.** If the repo is made public, add one.
+- 15GRMS home screen says "The Adler Original" while the recipe and journal screens say "The Hoffmann Method".
+- **Not yet checked in Safari.** All 8 `backdrop-filter` declarations carry `-webkit-`, but the glass has only been verified in the Chromium-based preview.
+- The handoff's "About" and "Writing" nav items were explored and are **not** in this design. The nav is Work / GitHub / LinkedIn.
 
 ## How to Edit
-1. Clone the repo locally
-2. Edit `index.html` (regenerate it whole; see Content Rules)
-3. Preview with `python3 -m http.server 4302 --directory .` and open `http://127.0.0.1:4302/`
-4. Check 390 / 768 / 1024 / 1440 / 1920px, open a case study, press Escape, and load a `#deep-link` directly
-5. Push to `main` (GitHub Pages auto-deploys)
+1. Edit `index.html` (regenerate it whole; see Content Rules)
+2. Preview with `python3 -m http.server 4302 --directory .` and open `http://127.0.0.1:4302/`
+3. Check 390 / 560 / 700 / 768 / 1440 / 1920px, open a case study, press Escape, and load a `#deep-link` directly
+4. Push to `main` (GitHub Pages auto-deploys)
 
-**Preview gotcha:** when the browser pane is not focused (`document.hasFocus() === false`), CSS transitions and `requestAnimationFrame` stall, and screenshots lag a step behind. A drawer that reports `.is-open` but a computed `transform` of `translateX(600px)` is this artifact, not a bug; confirm by setting `transition: none` and re-reading the computed value.
+**Preview gotchas**, both confirmed the hard way:
+- When the Browser pane is not displayed, the page composites no frames: screenshots come back blank or one step stale, `requestAnimationFrame` never fires, and CSS transitions do not progress. A drawer that reports `.is-open` but a computed `transform` of `translateX(600px)` is this artifact, not a bug. Confirm by setting `transition: none` and re-reading.
+- **Do not fake widths with `document.body.style.width`.** `--pad` and every `clamp()` still resolve against the real viewport, so responsive thresholds measured that way are wrong. Use real `resize_window` calls.
+- After editing, navigate with a cache-buster (`?v=2`) and assert something only the new file contains before trusting any result.
 
 ## Related Repos
-- **15GRMS**, formerly BrewLab: **live on the App Store since 17 September 2026**, https://apps.apple.com/us/app/15grms/id6811369525 . The repo is still `github.com/alxnhfr-bit/brewlab` (`brewlab` is the internal codename and survives in the repo name, the bundle id and the store key; the public name is 15GRMS). React + TypeScript in a Capacitor shell, iOS 16+, no network requests. Its README is the source of truth for the case-study copy: do not describe features from the old web build
+- **15GRMS**, formerly BrewLab: live on the App Store since 17 September 2026, https://apps.apple.com/us/app/15grms/id6811369525 . Repo is `github.com/alxnhfr-bit/brewlab` (`brewlab` is the internal codename; the public name is 15GRMS). Its README is the source of truth for that case study's copy
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
-- **Design handoff** for the Liquid Glass redesign: `design_handoff_portfolio_redesign/` (README spec, PROMPT.md, `reference/Portfolio v5b Chapters.dc.html`)
+- **Design handoffs**: `design_handoff_portfolio_glass/` is the current one. `design_handoff_portfolio_redesign/` is the superseded Liquid Glass chapters design
