@@ -117,8 +117,9 @@ Deviation from the handoff, deliberate: `--mx` / `--my` are registered with `@pr
                               statement, "Case study" link.
                               .shots: three screenshots, centre one taller.
       .sec   02 15GRMS        .dark-panel on #131316 with .dark-ambient.
-                              .dark-grid: .dark-text (card-dark) plus the
-                              portrait .dark-shot. App Store button and a
+                              .dark-grid: .dark-text (card-dark) plus
+                              .dark-shots, a pair of portrait screenshots
+                              (brew, brewing). App Store button and a
                               "Case study" link.
       .sec   03 to 05         .cards: Signal, JobAgent, Rise as .proj-card.
 
@@ -144,11 +145,21 @@ The handoff explicitly said to decide these with the owner rather than guess. Bo
 The only media queries in the file are `prefers-color-scheme` and `prefers-reduced-motion`. Both narrow-width behaviours the handoff asked about are handled fluidly, and **should stay that way**:
 
 - **`.shots`** is `grid-auto-flow: column` with `grid-auto-columns: minmax(150px, 1fr)` and `overflow-x: auto`. Three-up while each still fits, then a snapping strip. The 150px floor means a screenshot never drops below 150px, which is the legibility problem the handoff flagged. Measured: no scroll at 560 and above (about 153px each at 560), scrolls at 390.
-- **`.dark-grid`** is flex-wrap, not the handoff's two-column grid. `.dark-text { flex: 1 1 300px }` and `.dark-shot { flex: 0 1 300px }`. **The 300px basis is what sets the wrap point**: raising it collapses the layout earlier. Measured: side by side at 768 and above, wrapped at 700, which is the handoff's "below roughly 720px". At 1440 the image is exactly 300px wide, matching the spec's `minmax(0, 300px)` column.
+- **`.dark-grid`** is flex-wrap, not the handoff's two-column grid. `.dark-text { flex: 1 1 300px }` and `.dark-shots { flex: 0 1 400px }`. **Those bases are what set the wrap point**: raising either collapses the layout earlier. Measured 2026-09-19: side by side at 860 and above, wrapped at 840, so the threshold is **about 850px**. That is higher than the handoff's "below roughly 720px", which assumed a single screenshot; the owner asked for two on 2026-09-19 and the row is genuinely wider. Each image is 193px at 1440 and 144px at 390.
 
-`.shots` also carries 2px of block padding with a matching negative margin: `overflow-x: auto` computes `overflow-y` to `auto` as well, which would otherwise clip the images' top highlight.
+`.shots` carries 2px of block padding because `overflow-x: auto` computes `overflow-y` to `auto` as well, which would otherwise clip the images' top highlight. It used to pair that with `margin-top: -2px`; that is now `margin-top: auto` (see below), and the 2px simply joins the free space above the row.
 
-Verified with **no horizontal overflow at 390, 560, 700, 768, 900, 1024, 1440 and 1920px**.
+### The two project panels are locked to one height
+The owner asked on 2026-09-19 for the SundayAtlas panel to match the 15GRMS panel. They were not close: 596 vs 708 at 1440, and the gap *widened* to 296 at 768. The reason is that the dark panel's height was pinned by its screenshot, a fixed px width times the 600:1224 ratio, so it barely moved, while the SundayAtlas panel tracked `vw` through its `clamp()` heights.
+
+Both now take `min-height: var(--panel-min)` (`clamp(500px, 42vw, 620px)`) and are `display: flex; flex-direction: column`. Two consequences that are load-bearing:
+
+- **`.shots` needs `margin-top: auto`.** Without it the spare height lands *below* the screenshots and they stop bleeding off the panel's bottom edge, which is the whole point of that composition.
+- **`.dark-grid` needs `flex: 1`** so its `align-items: center` has height to centre the row in.
+
+Measured equal to the pixel at 1920 (620), 1440 (605), 1024 (500) and 900 (500). **Below the ~850px wrap point they diverge by design** (500 vs 770 at 768, 500 vs 814 at 390): once the dark row stacks, matching it would mean padding SundayAtlas with roughly 300px of empty glass, and the two panels are far enough apart vertically that nobody sees both at once. If `--panel-min` is ever raised, re-check that it still clears the SundayAtlas content at 1920, which is the tightest case (607 of content against a 620 floor).
+
+Verified with **no horizontal overflow at 390, 768, 840, 860, 900, 1024, 1440 and 1920px**.
 
 ## The case-study drawer
 

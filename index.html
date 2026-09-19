@@ -47,6 +47,12 @@
     --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
     --pad: clamp(16px, 3vw, 40px);
+    /* Both project panels share this floor so they read as the same
+       height. Without it the 15GRMS panel is pinned by its screenshot
+       (a fixed px width times the 600:1224 ratio) while SundayAtlas
+       tracks vw through its clamps, and the two drift apart by 112px
+       at 1440 and nearly 300px at 768. */
+    --panel-min: clamp(500px, 42vw, 620px);
   }
 
   html { font-size: 16px; }
@@ -191,6 +197,7 @@
     position: relative; border-radius: clamp(24px, 3vw, 40px);
     padding: clamp(28px, 3.5vw, 44px) clamp(24px, 3.5vw, 44px) 0;
     overflow: hidden;
+    display: flex; flex-direction: column; min-height: var(--panel-min);
   }
   /* The one pointer-driven surface on the page. */
   .specular {
@@ -223,7 +230,9 @@
     grid-auto-columns: minmax(150px, 1fr);
     gap: clamp(10px, 1.5vw, 18px); align-items: end;
     overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
-    padding-top: 2px; margin-top: -2px;
+    /* margin-top:auto keeps the bleed at the panel's bottom edge when
+       --panel-min makes the panel taller than its content. */
+    padding-top: 2px; margin-top: auto;
   }
   .shots::-webkit-scrollbar { display: none; }
   .shots img {
@@ -240,6 +249,7 @@
     position: relative; border-radius: clamp(24px, 3vw, 40px);
     padding: clamp(28px, 4vw, 48px); overflow: hidden;
     background: var(--dark-panel); box-shadow: 0 44px 90px -50px rgba(23,23,26,0.6);
+    display: flex; flex-direction: column; min-height: var(--panel-min);
   }
   .dark-ambient {
     position: absolute; inset: -20%; pointer-events: none;
@@ -255,7 +265,7 @@
      media query. At full width the text absorbs the free space, so the
      auto inline margins do nothing; once wrapped they centre the image. */
   .dark-grid {
-    position: relative; display: flex; flex-wrap: wrap;
+    position: relative; display: flex; flex-wrap: wrap; flex: 1;
     gap: clamp(28px, 4vw, 56px); align-items: center;
   }
   /* The 300px basis is what sets the wrap point. With the image's 300px
@@ -276,8 +286,16 @@
   .btn-light:hover { transform: translateY(-2px); color: var(--ink); }
   .cs-link--dark { color: var(--ground); text-decoration-color: rgba(251,251,250,0.45); }
   .cs-link--dark:hover { color: var(--ground); text-decoration-color: var(--ground); }
-  .dark-shot {
-    position: relative; flex: 0 1 300px; min-width: 0; max-width: 100%; margin-inline: auto;
+  /* Two screenshots share the right-hand side. The 400px basis is what
+     sets the wrap point now: the row needs roughly 756px of panel
+     interior, so it collapses at about 870px of viewport rather than the
+     720px it managed with a single image. */
+  .dark-shots {
+    position: relative; flex: 0 1 400px; min-width: 0; max-width: 100%;
+    margin-inline: auto; display: flex; gap: 14px;
+  }
+  .dark-shots img {
+    flex: 1 1 0; min-width: 0;
     width: 100%; height: auto; display: block; border-radius: 28px;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 40px 80px -30px rgba(0,0,0,0.75);
   }
@@ -526,7 +544,10 @@
               <a class="cs-link cs-link--dark" href="#15grms" data-open="15grms">Case study <span aria-hidden="true">&#8594;</span></a>
             </div>
           </div>
-          <img class="dark-shot" src="15grms-brew.webp" alt="15GRMS brew screen" width="600" height="1224" loading="lazy" decoding="async">
+          <div class="dark-shots">
+            <img src="15grms-brew.webp" alt="15GRMS brew screen" width="600" height="1224" loading="lazy" decoding="async">
+            <img src="15grms-brewing.webp" alt="15GRMS brew timer part way through the first pour" width="600" height="1224" loading="lazy" decoding="async">
+          </div>
         </div>
       </div>
     </section>
