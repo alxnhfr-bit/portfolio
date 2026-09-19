@@ -243,6 +243,8 @@ Also assessed and rejected, still true of this design:
 - After editing, navigate with a cache-buster (`?v=2`) and assert something only the new file contains before trusting any result.
 
 ## Related Repos
-- **15GRMS**, formerly BrewLab: live on the App Store since 17 September 2026, https://apps.apple.com/us/app/15grms/id6811369525 . Repo is `github.com/alxnhfr-bit/brewlab` (`brewlab` is the internal codename; the public name is 15GRMS). Its README is the source of truth for that case study's copy
+- **15GRMS**, formerly BrewLab: live on the App Store since 17 September 2026, https://apps.apple.com/us/app/15grms/id6811369525 . Repo is `github.com/alxnhfr-bit/brewlab` (`brewlab` is the internal codename; the public name is 15GRMS). Its README is the source of truth for that case study's copy, **except for the two things the owner corrected directly on 2026-09-19**, which the README does not capture and which must not be reverted to it:
+  - **The Problem is that recipes are scattered and their instructions are buried in video**, so trying a new one means looking it up, watching it brewed, and scrubbing back and forth to pull out the dose, ratio, temperature and pour timings. It is *not* the earlier framing of a clock and a scale competing for attention.
+  - **The visual identity is deliberately not brown.** Brewing apps all reach for the same coffee tones, so this one is high contrast and typographic with three colour themes the user picks. That rationale lives in The Product row and in the craft feature list.
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
 - **Design handoffs**: `design_handoff_portfolio_glass/` is the current one. `design_handoff_portfolio_redesign/` is the superseded Liquid Glass chapters design
