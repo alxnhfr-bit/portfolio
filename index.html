@@ -56,6 +56,16 @@
        screenshots stop growing (300px each, so 612 of image plus 2 x 48
        of padding), from about 1430px up. */
     --panel-min: min(52vw, 708px);
+    /* Everything in the SundayAtlas panel above its screenshots: the
+       panel's own top padding, the header's margin, and the header
+       itself. The first two are the real declarations repeated; the
+       header is measured (123 at 1440, 108 at 1024, 103 at 900) and
+       taken at its tallest, so this errs high and the screenshots come
+       out a little short rather than overflowing the panel and breaking
+       the height match with 15GRMS. The 126 is that 124 plus the 2px of
+       top padding .shots carries to keep its images' top highlight from
+       being clipped; without it the panel lands 1px over 15GRMS. */
+    --panel-chrome: calc(clamp(28px, 3.5vw, 44px) + clamp(28px, 3.5vw, 40px) + 126px);
   }
 
   html { font-size: 16px; }
@@ -490,6 +500,14 @@
      change, re-measure this number. */
   @media (min-width: 820px) {
     .panel, .dark-panel { min-height: var(--panel-min); }
+    /* The panel is taller than the screenshots need, so they grow UPWARD
+       into that space rather than leaving it as glass above them: they
+       stay bled off the bottom edge and simply show more of each phone.
+       Before this they left 150px empty at 1440. The 0.82 keeps the
+       centre screenshot's lead over its neighbours at the ratio the
+       design ships (measured 0.815 to 0.825). */
+    .shots img { height: calc((var(--panel-min) - var(--panel-chrome)) * 0.82); }
+    .shots .is-tall { height: calc(var(--panel-min) - var(--panel-chrome)); }
   }
 
   @media (prefers-reduced-motion: reduce) {

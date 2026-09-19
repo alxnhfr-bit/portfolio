@@ -158,12 +158,15 @@ The owner asked on 2026-09-19 for the SundayAtlas panel to match the 15GRMS pane
 
 Both now take `min-height: var(--panel-min)` and are `display: flex; flex-direction: column`. `--panel-min` is `min(52vw, 708px)`: the dark panel's screenshots are now fluid too, so its own height follows roughly 52vw (measured 708 at 1440, 666 at 1280, 532 at 1024, 468 at 900), and 708 is where the screenshots stop growing at 300px each.
 
-Two consequences that are load-bearing:
+Three consequences that are load-bearing:
 
 - **`.shots` needs `margin-top: auto`.** Without it the spare height lands *below* the screenshots and they stop bleeding off the panel's bottom edge, which is the whole point of that composition.
 - **`.dark-grid` needs `flex: 1`** so its `align-items: center` has height to centre the row in.
+- **The screenshots grow into the extra height rather than leaving it above them.** Inside the same media query, `.shots .is-tall` takes `calc(var(--panel-min) - var(--panel-chrome))` and its neighbours 82% of that, replacing the base `clamp()` heights. Without this the panel simply got taller and left the space empty: 150px of it at 1440, which the owner flagged on 2026-09-19. The screenshots stay bled off the bottom edge and just show more of each phone, 56% of the frame at 1440 instead of 43%.
 
-Measured **equal to the pixel at 1920, 1440, 1280, 1024 and 900**. Two known deviations, both deliberate:
+`--panel-chrome` is everything stacked above the screenshots: the panel's top padding and the header's bottom margin, both repeated verbatim from their real declarations, plus **126px**. That last number is the header at its tallest (123 at 1440, 108 at 1024, 103 at 900) plus the 2px of top padding `.shots` carries for its images' top highlight. It deliberately **errs high**, because the header shrinks at narrower widths: the screenshots then come out slightly short, leaving 41px of glass at 1440 and 53px at 900, instead of overflowing the panel and breaking the height match. Miss the 2px and the panel lands exactly 1px over 15GRMS, which is how this was found.
+
+Measured **equal to the pixel at 1920, 1440, 1280, 1024 and 900**, with the screenshots at 498, 498, 456, 335 and 279. Two known deviations, both deliberate:
 
 - **Between about 810 and 900 they drift by up to 50px** (426 vs 476 at 820). In that band the dark panel's height is driven by its *text card*, which grows as it narrows, so no single `vw` term tracks it. Raising `--panel-min` to catch it would pour 60 to 170px of dead glass into both panels at 1024 and 1280, which is a bad trade for a 100px-wide band.
 - **Below about 810 the floor does not apply at all** (the media query). The screenshots have stacked under the card by then, that panel grows past 770 on its own, and holding SundayAtlas level with it would buy nothing but dead glass. An earlier attempt at exactly that put **216px** of empty glass above the SundayAtlas screenshots at 1000px, which is why the gate exists.
