@@ -141,25 +141,36 @@ The handoff explicitly said to decide these with the owner rather than guess. Bo
   - Without those three, three of the five case studies would only be reachable by typing a `#hash`.
 - **The SundayAtlas screenshot row at narrow widths**: the owner chose a **scrollable snapping strip** over dropping to a single screenshot.
 
-### Responsive: two fluid handovers, no width breakpoints
-The only media queries in the file are `prefers-color-scheme` and `prefers-reduced-motion`. Both narrow-width behaviours the handoff asked about are handled fluidly, and **should stay that way**:
+### Responsive: two fluid handovers, and one width breakpoint
+The file has exactly **one** width media query, `@media (min-width: 820px)`, and it exists only to gate the shared panel height (see below). Everything else is fluid, including both narrow-width behaviours the handoff asked about, and that **should stay that way**:
 
 - **`.shots`** is `grid-auto-flow: column` with `grid-auto-columns: minmax(150px, 1fr)` and `overflow-x: auto`. Three-up while each still fits, then a snapping strip. The 150px floor means a screenshot never drops below 150px, which is the legibility problem the handoff flagged. Measured: no scroll at 560 and above (about 153px each at 560), scrolls at 390.
-- **`.dark-grid`** is flex-wrap, not the handoff's two-column grid. `.dark-text { flex: 1 1 300px }` and `.dark-shots { flex: 0 1 400px }`. **Those bases are what set the wrap point**: raising either collapses the layout earlier. Measured 2026-09-19: side by side at 860 and above, wrapped at 840, so the threshold is **about 850px**. That is higher than the handoff's "below roughly 720px", which assumed a single screenshot; the owner asked for two on 2026-09-19 and the row is genuinely wider. Each image is 193px at 1440 and 144px at 390.
+- **`.dark-grid`** is flex-wrap, not the handoff's two-column grid. `.dark-text { flex: 1 1 260px }`, and `.dark-shots` is **`flex: 0 1 auto` with `width: clamp(260px, 43vw, 614px)`**.
+
+  **Sizing the screenshot pair with a width clamp rather than a flex-basis is the whole trick, and it is easy to undo by accident.** `flex-wrap` breaks the line on *base* sizes, so a fixed `flex: 0 1 614px` basis drops the pair below the card the moment 614 plus the card stops fitting, which it did at 1113px. With `flex-basis: auto` the base size **is** the clamp, so the pair narrows and stays alongside the card instead. The owner asked on 2026-09-19 that the screenshots **stay next to the card, not below it**, so do not convert this back to a flex-basis.
+
+  Measured 2026-09-19: beside the card at 820, stacked at 800, so the stack point is **about 810px**, and it only stacks there because the clamp has bottomed out at 260px and the card itself would otherwise be squeezed unreadable. Each screenshot is 300px (full size, matching the single screenshot this replaced) from about 1430px up, 268 at 1280, 213 at 1024, 187 at 900 and 123 at 390.
 
 `.shots` carries 2px of block padding because `overflow-x: auto` computes `overflow-y` to `auto` as well, which would otherwise clip the images' top highlight. It used to pair that with `margin-top: -2px`; that is now `margin-top: auto` (see below), and the 2px simply joins the free space above the row.
 
 ### The two project panels are locked to one height
-The owner asked on 2026-09-19 for the SundayAtlas panel to match the 15GRMS panel. They were not close: 596 vs 708 at 1440, and the gap *widened* to 296 at 768. The reason is that the dark panel's height was pinned by its screenshot, a fixed px width times the 600:1224 ratio, so it barely moved, while the SundayAtlas panel tracked `vw` through its `clamp()` heights.
+The owner asked on 2026-09-19 for the SundayAtlas panel to match the 15GRMS panel. They were not close: 596 vs 708 at 1440, and the gap *widened* to 296 at 768, because the dark panel was pinned by a fixed-width screenshot while SundayAtlas tracked `vw` through its `clamp()` heights.
 
-Both now take `min-height: var(--panel-min)` (`clamp(500px, 42vw, 620px)`) and are `display: flex; flex-direction: column`. Two consequences that are load-bearing:
+Both now take `min-height: var(--panel-min)` and are `display: flex; flex-direction: column`. `--panel-min` is `min(52vw, 708px)`: the dark panel's screenshots are now fluid too, so its own height follows roughly 52vw (measured 708 at 1440, 666 at 1280, 532 at 1024, 468 at 900), and 708 is where the screenshots stop growing at 300px each.
+
+Two consequences that are load-bearing:
 
 - **`.shots` needs `margin-top: auto`.** Without it the spare height lands *below* the screenshots and they stop bleeding off the panel's bottom edge, which is the whole point of that composition.
 - **`.dark-grid` needs `flex: 1`** so its `align-items: center` has height to centre the row in.
 
-Measured equal to the pixel at 1920 (620), 1440 (605), 1024 (500) and 900 (500). **Below the ~850px wrap point they diverge by design** (500 vs 770 at 768, 500 vs 814 at 390): once the dark row stacks, matching it would mean padding SundayAtlas with roughly 300px of empty glass, and the two panels are far enough apart vertically that nobody sees both at once. If `--panel-min` is ever raised, re-check that it still clears the SundayAtlas content at 1920, which is the tightest case (607 of content against a 620 floor).
+Measured **equal to the pixel at 1920, 1440, 1280, 1024 and 900**. Two known deviations, both deliberate:
 
-Verified with **no horizontal overflow at 390, 768, 840, 860, 900, 1024, 1440 and 1920px**.
+- **Between about 810 and 900 they drift by up to 50px** (426 vs 476 at 820). In that band the dark panel's height is driven by its *text card*, which grows as it narrows, so no single `vw` term tracks it. Raising `--panel-min` to catch it would pour 60 to 170px of dead glass into both panels at 1024 and 1280, which is a bad trade for a 100px-wide band.
+- **Below about 810 the floor does not apply at all** (the media query). The screenshots have stacked under the card by then, that panel grows past 770 on its own, and holding SundayAtlas level with it would buy nothing but dead glass. An earlier attempt at exactly that put **216px** of empty glass above the SundayAtlas screenshots at 1000px, which is why the gate exists.
+
+If `--panel-min` is ever changed, re-check that it still clears the SundayAtlas content at 1920, which is the tightest case (607 of content against a 708 floor).
+
+Verified with **no horizontal overflow at 390, 640, 768, 800, 820, 900, 1024, 1200, 1280, 1440 and 1920px**.
 
 ## The case-study drawer
 
@@ -220,7 +231,7 @@ Also assessed and rejected, still true of this design:
 ## How to Edit
 1. Edit `index.html` (regenerate it whole; see Content Rules)
 2. Preview with `python3 -m http.server 4302 --directory .` and open `http://127.0.0.1:4302/`
-3. Check 390 / 560 / 700 / 768 / 1440 / 1920px, open a case study, press Escape, and load a `#deep-link` directly
+3. Check 390 / 560 / 800 / 820 / 900 / 1024 / 1440 / 1920px, open a case study, press Escape, and load a `#deep-link` directly. 800 and 820 straddle the 15GRMS stack point and the panel-height gate, so a change to either shows up there first
 4. Push to `main` (GitHub Pages auto-deploys)
 
 **Preview gotchas**, both confirmed the hard way:
