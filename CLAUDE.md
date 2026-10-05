@@ -4,7 +4,7 @@
 - **Repo**: `github.com/alxnhfr-bit/portfolio`
 - **Live URL**: `https://alxnhfr-bit.github.io/portfolio/`
 - **Hosting**: GitHub Pages (main branch, single `index.html`)
-- **File**: Self-contained `index.html` (~65 KB) plus 17 `.webp` images and one `.mp4` in the repo root
+- **File**: Self-contained `index.html` (~82 KB) plus 17 `.webp` images and one `.mp4` in the repo root
 
 ## Owner
 Alexander Neuhofer - Senior PM at Zalando. Building AI product prototypes independently. Portfolio targets consumer PM roles in APAC.
@@ -84,7 +84,7 @@ Six recipes, as classes: `.glass-panel` (heavy, SundayAtlas), `.pill-id`, `.pill
 Three things are load-bearing:
 1. **The material only works over the ambient field.** On a plain white parent it disappears.
 2. **`.page` needs `isolation: isolate` and `overflow: hidden`.** `isolation` scopes what `backdrop-filter` samples, `overflow` bounds the negative-inset ambient layers. Neither creates a containing block for `position: fixed`, which is why the drawer still resolves against the viewport from inside.
-3. **`backdrop-filter` is on exactly 8 elements, which is the intended ceiling.** Verified: 8 declarations, each paired with `-webkit-`. Adding more surfaces, or nesting glass inside glass beyond the one case in the dark chapter, costs frames on scroll. An `@supports not (...)` block thickens the gradients where `backdrop-filter` is unsupported.
+3. **`backdrop-filter` is the thing to count before adding a surface.** The handoff's stated ceiling was 8, and this brief claimed the file sat exactly on it. **Measured 2026-10-05, that was wrong**: with the drawer closed the page painted **9** glass surfaces, not 8. The 8 was a count of CSS declarations, not elements, and `.card` is one declaration covering several cards. Adding the GymLog panel and the Agent Quality Lab card took it to **11**. Count elements, not rules: `[...document.querySelectorAll('*')].filter(e => getComputedStyle(e).backdropFilter !== 'none')`, ignoring anything inside `.drawer` and the `.drawer-overlay`, which are `visibility: hidden` while closed and do not paint. Adding more surfaces, or nesting glass inside glass beyond the one case in the dark chapter, is still the thing most likely to cost frames on scroll, and 11 has **not** been verified on the owner's hardware. An `@supports not (...)` block thickens the gradients where `backdrop-filter` is unsupported.
 
 ### The ambient field
 `.ambient` is `position: fixed; inset: -16%; z-index: 0; pointer-events: none`, four OKLCH radials, `filter: blur(40px) saturate(135%)`, `omAmbient 30s`. Content sits at `z-index: 1`. The dark chapter has its own `.dark-ambient` at `inset: -20%` with three radials and `omAmbient 34s`.
@@ -121,7 +121,15 @@ Deviation from the handoff, deliberate: `--mx` / `--my` are registered with `@pr
                               .dark-shots, a pair of portrait screenshots
                               (brew, brewing). App Store button and a
                               "Case study" link.
-      .sec   03 to 05         .cards: Signal, JobAgent, Rise as .proj-card.
+      .sec   03 GymLog        .panel-wide.glass-panel. Same glass and the same
+                              two-column rhythm as 15GRMS, but the right side is
+                              .facts, a typographic grid of four hairline blocks,
+                              because this project has no screenshots. The facts
+                              carry NO backdrop-filter, so the panel costs one
+                              new glass surface, not five. No .specular: that
+                              stays on SundayAtlas alone.
+      .sec   04 to 07         .cards: Signal, JobAgent, Agent Quality Lab, Rise
+                              as .proj-card.
 
       .drawer-overlay
       .drawer                 the five case studies (see below)
@@ -153,10 +161,10 @@ The file has exactly **one** width media query, `@media (min-width: 820px)`, and
 
 `.shots` carries 2px of block padding because `overflow-x: auto` computes `overflow-y` to `auto` as well, which would otherwise clip the images' top highlight. It used to pair that with `margin-top: -2px`; that is now `margin-top: auto` (see below), and the 2px simply joins the free space above the row.
 
-### The two project panels are locked to one height
+### The three project panels are locked to one height
 The owner asked on 2026-09-19 for the SundayAtlas panel to match the 15GRMS panel. They were not close: 596 vs 708 at 1440, and the gap *widened* to 296 at 768, because the dark panel was pinned by a fixed-width screenshot while SundayAtlas tracked `vw` through its `clamp()` heights.
 
-Both now take `min-height: var(--panel-min)` and are `display: flex; flex-direction: column`. `--panel-min` is `min(52vw, 708px)`: the dark panel's screenshots are now fluid too, so its own height follows roughly 52vw (measured 708 at 1440, 666 at 1280, 532 at 1024, 468 at 900), and 708 is where the screenshots stop growing at 300px each.
+All three (`.panel`, `.dark-panel`, `.panel-wide`) now take `min-height: var(--panel-min)` and are `display: flex; flex-direction: column`. GymLog joined on 2026-10-05 and needed no tuning: its content is 620 against the 708 floor at 1440, so it fills without dead glass. `--panel-min` is `min(52vw, 708px)`: the dark panel's screenshots are now fluid too, so its own height follows roughly 52vw (measured 708 at 1440, 666 at 1280, 532 at 1024, 468 at 900), and 708 is where the screenshots stop growing at 300px each.
 
 Three consequences that are load-bearing:
 
@@ -166,7 +174,7 @@ Three consequences that are load-bearing:
 
 `--panel-chrome` is everything stacked above the screenshots: the panel's top padding and the header's bottom margin, both repeated verbatim from their real declarations, plus **126px**. That last number is the header at its tallest (123 at 1440, 108 at 1024, 103 at 900) plus the 2px of top padding `.shots` carries for its images' top highlight. It deliberately **errs high**, because the header shrinks at narrower widths: the screenshots then come out slightly short, leaving 41px of glass at 1440 and 53px at 900, instead of overflowing the panel and breaking the height match. Miss the 2px and the panel lands exactly 1px over 15GRMS, which is how this was found.
 
-Measured **equal to the pixel at 1920, 1440, 1280, 1024 and 900**, with the screenshots at 498, 498, 456, 335 and 279. Two known deviations, both deliberate:
+Measured **equal to the pixel at 1920, 1440, 1280, 1200, 1024 and 900** across all three panels, with the SundayAtlas screenshots at 498, 498, 456, 456, 335 and 279. Two known deviations, both deliberate:
 
 - **Between about 810 and 900 they drift by up to 50px** (426 vs 476 at 820). In that band the dark panel's height is driven by its *text card*, which grows as it narrows, so no single `vw` term tracks it. Raising `--panel-min` to catch it would pour 60 to 170px of dead glass into both panels at 1024 and 1280, which is a bad trade for a 100px-wide band.
 - **Below about 810 the floor does not apply at all** (the media query). The screenshots have stacked under the card by then, that panel grows past 770 on its own, and holding SundayAtlas level with it would buy nothing but dead glass. An earlier attempt at exactly that put **216px** of empty glass above the SundayAtlas screenshots at 1000px, which is why the gate exists.
@@ -230,6 +238,8 @@ Also assessed and rejected, still true of this design:
 - 15GRMS home screen says "The Adler Original" while the recipe and journal screens say "The Hoffmann Method".
 - **Not yet checked in Safari.** All 8 `backdrop-filter` declarations carry `-webkit-`, but the glass has only been verified in the Chromium-based preview.
 - The handoff's "About" and "Writing" nav items were explored and are **not** in this design. The nav is Work / GitHub / LinkedIn.
+- **The card grid falls to 3 + 1 between roughly 900 and 1155px**, leaving Rise alone on a second row. `repeat(auto-fit, minmax(260px, 1fr))` fits four across at 1160 and up and two-by-two below about 900; any four-item auto-fit grid has such a band. Forcing 2 + 2 there would need a second width media query, so it was left alone. Cosmetic.
+- **GymLog and Agent Quality Lab have no screenshots.** Both were added text-only on the owner's instruction (2026-10-05). GymLog's panel is built so this reads as deliberate rather than empty, but a screenshot strip in its case study is the obvious upgrade once images exist.
 
 ## How to Edit
 1. Edit `index.html` (regenerate it whole; see Content Rules)
@@ -247,5 +257,9 @@ Also assessed and rejected, still true of this design:
   - **The Problem is that recipes are scattered and their instructions are buried in video**, so trying a new one means looking it up, watching it brewed, and scrubbing back and forth to pull out the dose, ratio, temperature and pour timings. It is *not* the earlier framing of a clock and a scale competing for attention.
   - **The recipes are a starting point the user dials in, and the log is what informs the next adjustment.** The shipped recipes are not a fixed prescription: dose, ratio and temperature are the user's to change, every brew is logged with a rating and taste tags, and the next brew of that recipe is adjusted against the log rather than guessed. The problem statement carries the other half of this, that nothing otherwise remembers what you changed or how it turned out.
   - **The visual identity is deliberately not brown.** Brewing apps all reach for the same coffee tones, so this one is high contrast and typographic with three colour themes the user picks. That rationale lives in The Product row and in the craft feature list.
+- **GymLog**: offline-first strength training log, Expo SDK 57 / React Native 0.86 / TypeScript / SQLite. Repo `github.com/alxnhfr-bit/gymlog` is **PRIVATE**, so the portfolio shows no repo link. In **external beta on TestFlight**, version 1.1.0. Its `README.md` and `docs/testflight.md` are the source of truth for that case study.
+  - **The TestFlight join link is deliberately NOT on the portfolio** (owner's decision, 2026-10-05). It is a public link capped at 20 testers; publishing it would let strangers take the slots and would dead-end once the cap fills. Do not add it. The public `gymlog-site` repo holds only the privacy and support pages.
+  - The Problem row ("a set gets logged in the ninety seconds between the last one and the next") is **inferred from the feature set, not stated in the repo**. The Insight, Beta and Takeaway rows are grounded in the README. Confirm the Problem framing with the owner before treating it as settled, the way the 15GRMS framing had to be corrected.
+- **Agent Quality Lab**: `github.com/alxnhfr-bit/agent-quality-lab` is **PUBLIC**, so the case study links to it. Work in progress. Its `README.md` is the source of truth and is unusually explicit about what its evidence does and does not support; the case study's Takeaway row is built on exactly that, so do not quietly drop it for something more flattering.
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
 - **Design handoffs**: `design_handoff_portfolio_glass/` is the current one. `design_handoff_portfolio_redesign/` is the superseded Liquid Glass chapters design

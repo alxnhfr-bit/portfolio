@@ -323,6 +323,30 @@
   }
 
   /* ---------- 03 to 05, the card row ---------- */
+  /* A third panel treatment, for a project with no screenshots to show.
+     Same glass and the same two-column rhythm as the 15GRMS panel, but the
+     right-hand side is a typographic fact grid rather than phones. The
+     facts deliberately carry NO backdrop-filter: they are hairline blocks,
+     so this whole panel costs exactly one new glass surface. */
+  .panel-wide {
+    position: relative; border-radius: clamp(24px, 3vw, 40px);
+    padding: clamp(28px, 3.5vw, 44px); overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .wide-grid {
+    position: relative; display: flex; flex-wrap: wrap; flex: 1;
+    gap: clamp(28px, 4vw, 56px); align-items: center;
+  }
+  .wide-text { flex: 1 1 320px; min-width: 0; }
+  .wide-detail { margin: 14px 0 20px; font-size: 15.5px; line-height: 1.62; color: var(--ink-4); max-width: 46ch; }
+  .facts {
+    flex: 1 1 360px; min-width: 0; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: clamp(16px, 2vw, 26px);
+  }
+  .fact { border-top: 1px solid var(--hair); padding-top: 12px; }
+  .fact b { display: block; font-weight: 600; font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin-bottom: 7px; }
+  .fact span { display: block; font-size: 14.5px; line-height: 1.55; color: var(--ink-4); }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: clamp(12px, 1.5vw, 18px); }
   .proj-card {
     display: block; padding: clamp(24px, 2.6vw, 30px); border-radius: 28px;
@@ -445,6 +469,7 @@
   .panel-tint { border-radius: 20px; padding: 24px; }
   .panel--sg { background: #edf0f7; background: oklch(0.965 0.012 250); }
   .panel--ja { background: #f6f0f7; background: oklch(0.965 0.012 320); }
+  .panel--aq { background: #eef5f1; background: oklch(0.965 0.012 165); }
   .panel-tint-head {
     display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px;
     font-size: 12px; color: var(--ink-4); margin-bottom: 16px;
@@ -499,7 +524,7 @@
      at 800. If .dark-text's flex basis or .dark-shots' width clamp ever
      change, re-measure this number. */
   @media (min-width: 820px) {
-    .panel, .dark-panel { min-height: var(--panel-min); }
+    .panel, .dark-panel, .panel-wide { min-height: var(--panel-min); }
     /* The panel is taller than the screenshots need, so they grow UPWARD
        into that space rather than leaving it as glass above them: they
        stay bled off the bottom edge and simply show more of each phone.
@@ -545,7 +570,7 @@
   <header class="hero">
     <p class="eyebrow">Senior PM at Zalando &nbsp;&middot;&nbsp; independent builder</p>
     <h1>I ship the products I write specs for.</h1>
-    <p class="lede">Five products built solo, end to end: problem, design, code, evals, App Store review. Two are live, one runs daily, one runs weekly.</p>
+    <p class="lede">Seven products built solo, end to end: problem, design, code, evals, App Store review. Two are live, one is in external beta, one runs daily, one runs weekly.</p>
     <div class="hero-btns">
       <a class="btn btn-solid" href="https://apps.apple.com/us/app/15grms/id6811369525" target="_blank" rel="noopener">Download 15GRMS</a>
       <a class="btn btn-glass" href="https://sundayatlas.vercel.app/" target="_blank" rel="noopener">Open SundayAtlas <span aria-hidden="true">&#8599;</span></a>
@@ -595,6 +620,26 @@
       </div>
     </section>
 
+    <section class="sec">
+      <div class="panel-wide glass-panel">
+        <div class="wide-grid">
+          <div class="wide-text">
+            <p class="label">03 &nbsp;&middot;&nbsp; Beta &nbsp;&middot;&nbsp; TestFlight</p>
+            <h2 class="proj-title">GymLog</h2>
+            <p class="statement">An interrupted workout has to come back exactly as you left it.</p>
+            <p class="wide-detail">Offline first, with no account and no network calls. SQLite is the single source of truth, including the workout in progress, the values you have typed and the running rest timer.</p>
+            <a class="cs-link" href="#gymlog" data-open="gymlog">Case study <span aria-hidden="true">&#8594;</span></a>
+          </div>
+          <div class="facts">
+            <div class="fact"><b>Offline first</b><span>No account, no ads and no network. Everything stays on the device.</span></div>
+            <div class="fact"><b>Crash safe</b><span>Every change runs through one transactional write, so an active workout restores exactly.</span></div>
+            <div class="fact"><b>Lock screen</b><span>The rest timer runs as a Live Activity in the Dynamic Island, with minus 15, Skip and plus 15.</span></div>
+            <div class="fact"><b>External beta</b><span>Version 1.1.0 is on TestFlight with external testers.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="sec sec--cards">
       <div class="cards">
 
@@ -614,6 +659,15 @@
           </div>
           <p class="card-statement">The hard part was not the plumbing, it was encoding the rubric.</p>
           <p class="card-detail">Multi-stage orchestration across 20+ APIs, Claude as the scoring layer.</p>
+        </a>
+
+        <a class="proj-card card" href="#agent-lab" data-open="agent-lab">
+          <div class="card-head">
+            <h3>Agent Quality Lab</h3>
+            <span class="card-status">Work in progress</span>
+          </div>
+          <p class="card-statement">A right answer reached by guessing should not score the same as a right answer.</p>
+          <p class="card-detail">The same task given to different implementations, compared case by case on what each observably did.</p>
         </a>
 
         <a class="proj-card card" href="#rise" data-open="rise">
@@ -812,13 +866,46 @@
             </div>
           </div>
           <div class="cs-next">
-            <a class="pill pill-nav next-btn" href="#signal" data-next="signal"><span class="next-word">Next</span><span>03 Signal</span><span aria-hidden="true">&#8594;</span></a>
+            <a class="pill pill-nav next-btn" href="#gymlog" data-next="gymlog"><span class="next-word">Next</span><span>03 GymLog</span><span aria-hidden="true">&#8594;</span></a>
+          </div>
+        </article>
+
+        <article class="case-study" id="gymlog">
+          <div class="cs-head">
+            <p class="cs-meta"><span>03</span><span class="dot"></span><span>Beta &middot; TestFlight</span></p>
+            <h2 class="cs-title">GymLog</h2>
+            <p class="cs-tagline">An offline-first strength training log for iPhone and Android.</p>
+          </div>
+          <div>
+            <div class="story-row">
+              <p class="story-label">The Problem</p>
+              <p class="story-statement">A set gets logged in the ninety seconds between the last one and the next.</p>
+              <p class="story-detail">That is a poor moment to be navigating an app. The phone is locked as often as not, the rest countdown matters more than the screen does, and anything that loses a half-finished workout loses the whole session with it. Most of what a training log has to get right happens while nobody is looking at it.</p>
+            </div>
+            <div class="story-row">
+              <p class="story-label">The Insight</p>
+              <p class="story-statement">Put every piece of state in the database, including the parts most apps keep in memory.</p>
+              <p class="story-detail">The workout in progress, the values typed into a set and the running rest timer all live in SQLite. Every mutation goes through a single transactional write that bumps a version counter, and subscribed queries re-run from it. Restoring after a crash is therefore not a recovery path that has to be kept in step with the live one; it is just reading the database again.</p>
+            </div>
+            <div class="story-row">
+              <p class="story-label">The Beta</p>
+              <p class="story-statement">Version 1.1.0 is on TestFlight with external testers.</p>
+              <p class="story-detail">Expo SDK 57 and React Native 0.86 in TypeScript, with SQLite as the only source of truth. A library of sixty-plus exercises with muscle maps, templates for the workouts you repeat, a week calendar to plan them, and a logging screen that shows one exercise at a time with last time&#8217;s numbers already filled in. The rest timer runs as a Live Activity on the lock screen and in the Dynamic Island, with minus 15, Skip and plus 15. Personal records are detected as they happen and every workout ends in a summary. No account, no ads, no tracking, and backup and restore through Files or iCloud Drive.</p>
+            </div>
+            <div class="story-row">
+              <p class="story-label">The Takeaway</p>
+              <p class="story-statement">Colour lives in the chrome; every surface you type into is paper with ink.</p>
+              <p class="story-detail">One rule settled most of the visual decisions. Headers, timers and buttons carry the colour; the fields you enter numbers into stay paper, because that is where legibility beats personality. Two parts of the design did not survive the move to React Native and had to be rebuilt: its shadows are blurred, so the hard offset is drawn as a second view sitting behind the first, and it has no conic gradient, so the radial speed-line fields are drawn as SVG wedges.</p>
+            </div>
+          </div>
+          <div class="cs-next">
+            <a class="pill pill-nav next-btn" href="#signal" data-next="signal"><span class="next-word">Next</span><span>04 Signal</span><span aria-hidden="true">&#8594;</span></a>
           </div>
         </article>
 
         <article class="case-study" id="signal">
           <div class="cs-head">
-            <p class="cs-meta"><span>03</span><span class="dot"></span><span>Live &middot; Runs weekly</span></p>
+            <p class="cs-meta"><span>04</span><span class="dot"></span><span>Live &middot; Runs weekly</span></p>
             <h2 class="cs-title">Signal</h2>
             <p class="cs-tagline">Autonomous market-signal agent, with the eval harness to prove it works.</p>
           </div>
@@ -861,13 +948,13 @@
             </div>
           </div>
           <div class="cs-next">
-            <a class="pill pill-nav next-btn" href="#jobagent" data-next="jobagent"><span class="next-word">Next</span><span>04 JobAgent</span><span aria-hidden="true">&#8594;</span></a>
+            <a class="pill pill-nav next-btn" href="#jobagent" data-next="jobagent"><span class="next-word">Next</span><span>05 JobAgent</span><span aria-hidden="true">&#8594;</span></a>
           </div>
         </article>
 
         <article class="case-study" id="jobagent">
           <div class="cs-head">
-            <p class="cs-meta"><span>04</span><span class="dot"></span><span>Live &middot; Runs daily</span></p>
+            <p class="cs-meta"><span>05</span><span class="dot"></span><span>Live &middot; Runs daily</span></p>
             <h2 class="cs-title">JobAgent</h2>
             <p class="cs-tagline">The same agent, built twice, to find out what the platform costs you.</p>
           </div>
@@ -921,13 +1008,61 @@
             </div>
           </div>
           <div class="cs-next">
-            <a class="pill pill-nav next-btn" href="#rise" data-next="rise"><span class="next-word">Next</span><span>05 Rise</span><span aria-hidden="true">&#8594;</span></a>
+            <a class="pill pill-nav next-btn" href="#agent-lab" data-next="agent-lab"><span class="next-word">Next</span><span>06 Agent Quality Lab</span><span aria-hidden="true">&#8594;</span></a>
+          </div>
+        </article>
+
+        <article class="case-study" id="agent-lab">
+          <div class="cs-head">
+            <p class="cs-meta"><span>06</span><span class="dot dot--muted"></span><span>Work in progress</span></p>
+            <h2 class="cs-title">Agent Quality Lab</h2>
+            <p class="cs-tagline">A lab for testing and comparing agentic systems, case by case.</p>
+            <a class="link-u cs-live" href="https://github.com/alxnhfr-bit/agent-quality-lab" target="_blank" rel="noopener" aria-label="Agent Quality Lab on GitHub">Read the repository <span aria-hidden="true">&#8599;</span></a>
+          </div>
+          <div class="panel-tint panel--aq">
+            <div class="panel-tint-head"><b>Run and compare</b><span>Node.js &middot; TypeScript &middot; CLI &middot; Anthropic API</span></div>
+            <div class="pflow">
+              <div class="pnode"><span class="node-label">1 &middot; Scenario</span><span class="node-text">Written instructions, schemas, datasets, the tools a candidate may call, a time limit per case</span></div>
+              <div class="pconn" aria-hidden="true"></div>
+              <div class="pnode"><span class="node-label">2 &middot; Candidate</span><span class="node-text">Any implementation that takes a case and returns an answer or an abstention</span></div>
+              <div class="pconn" aria-hidden="true"></div>
+              <div class="pnode"><span class="node-label">3 &middot; Run</span><span class="node-text">Status, output and trace for every case, written as plain files</span></div>
+              <div class="pconn" aria-hidden="true"></div>
+              <div class="pnode"><span class="node-label">4 &middot; Evaluators</span><span class="node-text">Several verdicts on each completed case: pass, fail or not applicable</span></div>
+              <div class="pconn" aria-hidden="true"></div>
+              <div class="pnode pnode--dark"><span class="node-label">5 &middot; Compare</span><span class="node-text">Two runs side by side, case by case and broken down by tag, or a refusal listing why they are not comparable</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="story-row">
+              <p class="story-label">The Problem</p>
+              <p class="story-statement">Most evaluations of an agent score the final answer.</p>
+              <p class="story-detail">That leaves out the things that decide whether you would deploy it. Did it use the right tools, and only as often as it needed to? Did it abstain when it could not know? When a tool failed, did it recover, or did it quietly guess? And what did the run cost in time, calls and tokens?</p>
+            </div>
+            <div class="story-row">
+              <p class="story-label">The Insight</p>
+              <p class="story-statement">Two candidates can return the same correct answer for opposite reasons.</p>
+              <p class="story-detail">In the example scenario a stock lookup fails. One candidate retries and reads the real stock level; the other falls back to a guess. Both answer true, and both are right. A check of the final answer scores them identically. The trace does not, and on the next case, where the right answer is false, the guess is wrong.</p>
+            </div>
+            <div class="story-row">
+              <p class="story-label">The Build</p>
+              <p class="story-statement">An early version: two synthetic scenarios, and runs stored as plain files.</p>
+              <p class="story-detail">Execution and scoring are separate steps, so a stored run can be scored again with new evaluators without running the candidate again. The runner never retries a case and never substitutes an output. Every case is recorded as what it actually was, completed or malformed or errored or timed out, and the last three count against the candidate. Each event in a trace is marked observed when the lab saw it happen through a tool it provides, or reported when the candidate merely said so, because the second is weaker evidence. Two runs are compared only if the scenario version, instructions, tools, dataset, time limit and evaluator versions all match; otherwise the comparison refuses and lists the reasons.</p>
+            </div>
+            <div class="story-row">
+              <p class="story-label">The Takeaway</p>
+              <p class="story-statement">Saying what the evidence does not support is part of the result.</p>
+              <p class="story-detail">Every candidate in the examples so far is a synthetic program, and no result from a real model is published. A comparison uses one run per side, with no repeated trials and no estimate of run-to-run noise, which is why it describes differences and never calls one of them a regression. Writing that down is not a disclaimer bolted on at the end; it is the thing that stops a tidy table from being read as more than it is.</p>
+            </div>
+          </div>
+          <div class="cs-next">
+            <a class="pill pill-nav next-btn" href="#rise" data-next="rise"><span class="next-word">Next</span><span>07 Rise</span><span aria-hidden="true">&#8594;</span></a>
           </div>
         </article>
 
         <article class="case-study" id="rise">
           <div class="cs-head">
-            <p class="cs-meta"><span>05</span><span class="dot dot--muted"></span><span>Prototype</span></p>
+            <p class="cs-meta"><span>07</span><span class="dot dot--muted"></span><span>Prototype</span></p>
             <h2 class="cs-title">Rise</h2>
             <p class="cs-tagline">AI Health &amp; Fitness OS</p>
             <a class="link-u cs-live" href="https://rise-health-os.lovable.app/" target="_blank" rel="noopener">View the prototype <span aria-hidden="true">&#8599;</span></a>
@@ -987,7 +1122,7 @@
   'use strict';
 
   /* Reading order, which is also the numbering shown in the drawer. */
-  var IDS = ['sundayatlas', '15grms', 'signal', 'jobagent', 'rise'];
+  var IDS = ['sundayatlas', '15grms', 'gymlog', 'signal', 'jobagent', 'agent-lab', 'rise'];
   var panel = document.querySelector('[data-drawer]');
   var overlay = document.querySelector('[data-overlay]');
   var closeBtn = panel ? panel.querySelector('[data-close]') : null;
