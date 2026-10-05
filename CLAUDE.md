@@ -122,12 +122,13 @@ Deviation from the handoff, deliberate: `--mx` / `--my` are registered with `@pr
                               (brew, brewing). App Store button and a
                               "Case study" link.
       .sec   03 GymLog        .panel-wide.glass-panel. Same glass and the same
-                              two-column rhythm as 15GRMS, but the right side is
-                              .facts, a typographic grid of four hairline blocks,
-                              because this project has no screenshots. The facts
-                              carry NO backdrop-filter, so the panel costs one
-                              new glass surface, not five. No .specular: that
-                              stays on SundayAtlas alone.
+                              two-column rhythm as 15GRMS: .wide-text plus
+                              .wide-shots, two screenshots at the same width
+                              clamp the dark panel uses. No .specular: that
+                              stays on SundayAtlas alone. The .facts grid this
+                              panel shipped with earlier on 2026-10-05 is still
+                              in the stylesheet, unused, as the pattern to reach
+                              for when a project has no screenshots.
       .sec   04 to 07         .cards: Signal, JobAgent, Agent Quality Lab, Rise
                               as .proj-card.
 
@@ -157,7 +158,11 @@ The file has exactly **one** width media query, `@media (min-width: 820px)`, and
 
   **Sizing the screenshot pair with a width clamp rather than a flex-basis is the whole trick, and it is easy to undo by accident.** `flex-wrap` breaks the line on *base* sizes, so a fixed `flex: 0 1 614px` basis drops the pair below the card the moment 614 plus the card stops fitting, which it did at 1113px. With `flex-basis: auto` the base size **is** the clamp, so the pair narrows and stays alongside the card instead. The owner asked on 2026-09-19 that the screenshots **stay next to the card, not below it**, so do not convert this back to a flex-basis.
 
-  Measured 2026-09-19: beside the card at 820, stacked at 800, so the stack point is **about 810px**, and it only stacks there because the clamp has bottomed out at 260px and the card itself would otherwise be squeezed unreadable. Each screenshot is 300px (full size, matching the single screenshot this replaced) from about 1430px up, 268 at 1280, 213 at 1024, 187 at 900 and 123 at 390.
+  **The "about 810px" stack point recorded here on 2026-09-19 was wrong.** It came from a test that read the gap between the row's two tops and called anything over 40px a wrap. `.dark-grid` is `align-items: center`, so two items on the *same* line routinely differ by 50 to 80px at narrow widths; the test was measuring the centring offset, not a wrap. Re-measured on 2026-10-05 by asking whether the screenshots' top has passed the card's bottom: **stacked at 660, beside at 680, so the stack point is about 670px.** Each screenshot is 300px (full size, matching the single screenshot this replaced) from about 1430px up, 268 at 1280, 213 at 1024, 187 at 900 and 123 at 390.
+
+  The lesson is one this repo keeps relearning: **pick a predicate that can only be true of the thing being tested.** `shots.top >= text.bottom` cannot be produced by centring; a top-delta threshold can.
+
+  `.wide-grid` (GymLog) uses the same flex bases and stacks at the same width, deliberately, so all three panels change shape together.
 
 `.shots` carries 2px of block padding because `overflow-x: auto` computes `overflow-y` to `auto` as well, which would otherwise clip the images' top highlight. It used to pair that with `margin-top: -2px`; that is now `margin-top: auto` (see below), and the 2px simply joins the free space above the row.
 
@@ -176,8 +181,8 @@ Three consequences that are load-bearing:
 
 Measured **equal to the pixel at 1920, 1440, 1280, 1200, 1024 and 900** across all three panels, with the SundayAtlas screenshots at 498, 498, 456, 456, 335 and 279. Two known deviations, both deliberate:
 
-- **Between about 810 and 900 they drift by up to 50px** (426 vs 476 at 820). In that band the dark panel's height is driven by its *text card*, which grows as it narrows, so no single `vw` term tracks it. Raising `--panel-min` to catch it would pour 60 to 170px of dead glass into both panels at 1024 and 1280, which is a bad trade for a 100px-wide band.
-- **Below about 810 the floor does not apply at all** (the media query). The screenshots have stacked under the card by then, that panel grows past 770 on its own, and holding SundayAtlas level with it would buy nothing but dead glass. An earlier attempt at exactly that put **216px** of empty glass above the SundayAtlas screenshots at 1000px, which is why the gate exists.
+- **Between about 670 and 900 they drift**, by 50px at 820 (426 vs 476) and more at 768 (379, 497, 464). The rows are still side by side there, but `min(52vw, 708)` has fallen below the dark panel's own content, which in that band is driven by its *text card* growing as it narrows. No single `vw` term tracks that. Raising `--panel-min` to catch it would pour 60 to 170px of dead glass into all three panels at 1024 and 1280, a bad trade for a 230px-wide band.
+- **Below about 670 all three change shape**: the dark and wide rows stack, those panels grow on their own (683 and 579 against SundayAtlas's 379 at 640), and matching them would buy nothing but dead glass. An earlier attempt at exactly that put **216px** of empty glass above the SundayAtlas screenshots at 1000px, which is why the gate exists at all.
 
 If `--panel-min` is ever changed, re-check that it still clears the SundayAtlas content at 1920, which is the tightest case (607 of content against a 708 floor).
 
@@ -239,7 +244,8 @@ Also assessed and rejected, still true of this design:
 - **Not yet checked in Safari.** All 8 `backdrop-filter` declarations carry `-webkit-`, but the glass has only been verified in the Chromium-based preview.
 - The handoff's "About" and "Writing" nav items were explored and are **not** in this design. The nav is Work / GitHub / LinkedIn.
 - **The card grid falls to 3 + 1 between roughly 900 and 1155px**, leaving Rise alone on a second row. `repeat(auto-fit, minmax(260px, 1fr))` fits four across at 1160 and up and two-by-two below about 900; any four-item auto-fit grid has such a band. Forcing 2 + 2 there would need a second width media query, so it was left alone. Cosmetic.
-- **GymLog and Agent Quality Lab have no screenshots.** Both were added text-only on the owner's instruction (2026-10-05). GymLog's panel is built so this reads as deliberate rather than empty, but a screenshot strip in its case study is the obvious upgrade once images exist.
+- **Agent Quality Lab has no screenshots**, by nature: it is a CLI. Its case study carries the pipeline diagram instead. It does generate a self-contained HTML comparison report, which would be the honest image to show if one is ever wanted.
+- GymLog gained four screenshots on 2026-10-05 (`gymlog-{train,workout,progress,program}.webp`, 600x1219, cropped to one shared ratio so the panel pair is not bottom-ragged). The 1320px source JPGs are gitignored and stay local, as the video source is.
 
 ## How to Edit
 1. Edit `index.html` (regenerate it whole; see Content Rules)
@@ -259,7 +265,9 @@ Also assessed and rejected, still true of this design:
   - **The visual identity is deliberately not brown.** Brewing apps all reach for the same coffee tones, so this one is high contrast and typographic with three colour themes the user picks. That rationale lives in The Product row and in the craft feature list.
 - **GymLog**: offline-first strength training log, Expo SDK 57 / React Native 0.86 / TypeScript / SQLite. Repo `github.com/alxnhfr-bit/gymlog` is **PRIVATE**, so the portfolio shows no repo link. In **external beta on TestFlight**, version 1.1.0. Its `README.md` and `docs/testflight.md` are the source of truth for that case study.
   - **The TestFlight join link is deliberately NOT on the portfolio** (owner's decision, 2026-10-05). It is a public link capped at 20 testers; publishing it would let strangers take the slots and would dead-end once the cap fills. Do not add it. The public `gymlog-site` repo holds only the privacy and support pages.
-  - The Problem row ("a set gets logged in the ninety seconds between the last one and the next") is **inferred from the feature set, not stated in the repo**. The Insight, Beta and Takeaway rows are grounded in the README. Confirm the Problem framing with the owner before treating it as settled, the way the 15GRMS framing had to be corrected.
+  - The Problem row ("a set gets logged in the ninety seconds between the last one and the next") is **inferred from the feature set, not stated in the repo**. Confirm it with the owner before treating it as settled, the way the 15GRMS framing had to be corrected.
+  - **The GymLog README's Design section is out of date and must not be used for copy.** It describes a "Shonen impact" direction: flat vermilion and chrome-yellow ink on warm paper, Archivo Black, hard offset shadows, radial speed-line fields, no border radius and no blur. The screenshots of the shipped beta show none of it: the app is a dark UI with blue accents and ordinary rounded iOS controls. A Takeaway row built on the README's design rule was written and then removed once the screenshots arrived on 2026-10-05. The README's own M2 list still has "visual design system (3 themes)" as planned, which is the likely explanation. **Do not describe GymLog's visual identity from the README.**
+  - The screenshots also show features the README does not mention, which the case study now uses: a program finder that builds a plan from experience, goal and available days, and a progress view that names the lifts which have fallen behind their best and marks each as improving or dipping.
 - **Agent Quality Lab**: `github.com/alxnhfr-bit/agent-quality-lab` is **PUBLIC**, so the case study links to it. Work in progress. Its `README.md` is the source of truth and is unusually explicit about what its evidence does and does not support; the case study's Takeaway row is built on exactly that, so do not quietly drop it for something more flattering.
 - **SundayAtlas**: deployed on Vercel at `sundayatlas.vercel.app`
 - **Design handoffs**: `design_handoff_portfolio_glass/` is the current one. `design_handoff_portfolio_redesign/` is the superseded Liquid Glass chapters design

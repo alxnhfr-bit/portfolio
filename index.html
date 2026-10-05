@@ -337,8 +337,22 @@
     position: relative; display: flex; flex-wrap: wrap; flex: 1;
     gap: clamp(28px, 4vw, 56px); align-items: center;
   }
-  .wide-text { flex: 1 1 320px; min-width: 0; }
+  .wide-text { flex: 1 1 260px; min-width: 0; }
   .wide-detail { margin: 14px 0 20px; font-size: 15.5px; line-height: 1.62; color: var(--ink-4); max-width: 46ch; }
+  /* Same geometry as .dark-shots, so the wide panel stacks at the same
+     width the dark one does and the 820px height gate stays valid for all
+     three panels. Light variant: the screenshots are a dark UI, so they get
+     a drawn 1px edge rather than the dark panel's inner white rim. */
+  .wide-shots {
+    position: relative; flex: 0 1 auto;
+    width: clamp(260px, 43vw, 614px); min-width: 0; max-width: 100%;
+    margin-inline: auto; display: flex; gap: 14px;
+  }
+  .wide-shots img {
+    flex: 1 1 0; min-width: 0;
+    width: 100%; height: auto; display: block; border-radius: 28px;
+    box-shadow: 0 0 0 1px rgba(23,23,26,0.12), 0 36px 72px -28px rgba(23,23,26,0.42);
+  }
   .facts {
     flex: 1 1 360px; min-width: 0; display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -520,9 +534,14 @@
      screenshots are still beside their card: once they stack, that panel
      grows past 500 on its own and holding SundayAtlas level with it would
      buy nothing but dead glass above its screenshots.
-     820px is just above the measured stack point: beside at 820, stacked
-     at 800. If .dark-text's flex basis or .dark-shots' width clamp ever
-     change, re-measure this number. */
+     820px is NOT the stack point; that is about 670. The 810 figure this
+     file carried was a measurement error: the test read the gap between
+     the row's two tops, and align-items:center makes that 50 to 80px even
+     on one line. 820 is kept because the floor is inert below about 900
+     anyway, since min(52vw, 708) falls under the dark panel's own content
+     there and can only pad SundayAtlas part of the way. Moving the gate to
+     680 would take 768 from 379 to 399 against a 497 dark panel: not worth
+     a behaviour change. */
   @media (min-width: 820px) {
     .panel, .dark-panel, .panel-wide { min-height: var(--panel-min); }
     /* The panel is taller than the screenshots need, so they grow UPWARD
@@ -630,11 +649,9 @@
             <p class="wide-detail">Offline first, with no account and no network calls. SQLite is the single source of truth, including the workout in progress, the values you have typed and the running rest timer.</p>
             <a class="cs-link" href="#gymlog" data-open="gymlog">Case study <span aria-hidden="true">&#8594;</span></a>
           </div>
-          <div class="facts">
-            <div class="fact"><b>Offline first</b><span>No account, no ads and no network. Everything stays on the device.</span></div>
-            <div class="fact"><b>Crash safe</b><span>Every change runs through one transactional write, so an active workout restores exactly.</span></div>
-            <div class="fact"><b>Lock screen</b><span>The rest timer runs as a Live Activity in the Dynamic Island, with minus 15, Skip and plus 15.</span></div>
-            <div class="fact"><b>External beta</b><span>Version 1.1.0 is on TestFlight with external testers.</span></div>
+          <div class="wide-shots">
+            <img src="gymlog-train.webp" alt="GymLog week view with a finished workout and the rest of the week planned" width="600" height="1219" loading="lazy" decoding="async">
+            <img src="gymlog-workout.webp" alt="GymLog active workout, ready to log the first set" width="600" height="1219" loading="lazy" decoding="async">
           </div>
         </div>
       </div>
@@ -876,6 +893,12 @@
             <h2 class="cs-title">GymLog</h2>
             <p class="cs-tagline">An offline-first strength training log for iPhone and Android.</p>
           </div>
+          <div class="strip">
+            <figure><img src="gymlog-train.webp" alt="GymLog week view with a finished workout and the rest of the week planned" loading="lazy" decoding="async" width="600" height="1219" style="aspect-ratio: 600 / 1219;"><figcaption>Train</figcaption></figure>
+            <figure><img src="gymlog-workout.webp" alt="GymLog active workout, ready to log the first set" loading="lazy" decoding="async" width="600" height="1219" style="aspect-ratio: 600 / 1219;"><figcaption>Workout</figcaption></figure>
+            <figure><img src="gymlog-progress.webp" alt="GymLog progress tab with weekly muscle volume and the lifts that have fallen behind" loading="lazy" decoding="async" width="600" height="1219" style="aspect-ratio: 600 / 1219;"><figcaption>Progress</figcaption></figure>
+            <figure><img src="gymlog-program.webp" alt="GymLog program finder asking about experience, goal and training days" loading="lazy" decoding="async" width="600" height="1219" style="aspect-ratio: 600 / 1219;"><figcaption>Program</figcaption></figure>
+          </div>
           <div>
             <div class="story-row">
               <p class="story-label">The Problem</p>
@@ -894,8 +917,42 @@
             </div>
             <div class="story-row">
               <p class="story-label">The Takeaway</p>
-              <p class="story-statement">Colour lives in the chrome; every surface you type into is paper with ink.</p>
-              <p class="story-detail">One rule settled most of the visual decisions. Headers, timers and buttons carry the colour; the fields you enter numbers into stay paper, because that is where legibility beats personality. Two parts of the design did not survive the move to React Native and had to be rebuilt: its shadows are blurred, so the hard offset is drawn as a second view sitting behind the first, and it has no conic gradient, so the radial speed-line fields are drawn as SVG wedges.</p>
+              <p class="story-statement">A log that only records is a worse product than one that notices.</p>
+              <p class="story-detail">Writing the numbers down is the easy half. The progress view names the lifts that have slipped behind their best and by how much, marks each one as improving or dipping, and shows which muscles came in under their target for the week. Deciding what to change next session is the actual work, and an app that leaves you to spot it yourself has handed back the only part that was hard.</p>
+            </div>
+          </div>
+          <div class="features">
+            <div class="feature">
+              <h3>The week</h3>
+              <ul>
+                <li>Templates for the workouts you repeat, planned onto a week calendar around your rest days.</li>
+                <li>A program finder builds one from your experience, your goal and the days you can train.</li>
+                <li>The home screen shows what is done, what is still planned, and how many sessions are left in the week.</li>
+              </ul>
+            </div>
+            <div class="feature">
+              <h3>Logging a set</h3>
+              <ul>
+                <li>One exercise at a time, with last time&#8217;s numbers already filled in.</li>
+                <li>Warm-up and working sets, RIR and RPE, tempo, notes, supersets and unilateral work.</li>
+                <li>Add, skip or substitute an exercise mid-session, with undo.</li>
+              </ul>
+            </div>
+            <div class="feature">
+              <h3>The rest timer</h3>
+              <ul>
+                <li>Starts on its own, set per exercise and per set type.</li>
+                <li>Runs as a Live Activity on the lock screen and in the Dynamic Island.</li>
+                <li>Minus 15, Skip and plus 15 all work without unlocking the phone.</li>
+              </ul>
+            </div>
+            <div class="feature">
+              <h3>Progress and data</h3>
+              <ul>
+                <li>Estimated 1RM per lift with a trend, and the lifts that have fallen behind their best.</li>
+                <li>Weekly volume per muscle against a target, plus a bodyweight log.</li>
+                <li>No account, no ads, no tracking. Backup and restore through Files or iCloud Drive.</li>
+              </ul>
             </div>
           </div>
           <div class="cs-next">
